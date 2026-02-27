@@ -1,7 +1,7 @@
 package az.azal.libraff_book_store.entity;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,15 +35,15 @@ public class BookEntity {
 
 	private String genre;
 
-	private LocalDate datePublished;
+	private LocalDateTime datePublished;
 
 	private BigDecimal purchasePrice;
 
 	private BigDecimal salesPrice;
 
-	private LocalDate purchaseDate;
+	private LocalDateTime purchaseDate;
 
-	private LocalDate salesDate;
+	private LocalDateTime salesDate;
 
 	private Integer publicationAmount;
 

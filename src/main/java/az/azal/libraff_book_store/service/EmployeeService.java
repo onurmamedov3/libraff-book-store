@@ -1,5 +1,8 @@
 package az.azal.libraff_book_store.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +15,8 @@ import az.azal.libraff_book_store.repository.EmployeeRepository;
 import az.azal.libraff_book_store.repository.StoreRepository;
 import az.azal.libraff_book_store.request.EmployeeAddRequest;
 import az.azal.libraff_book_store.response.EmployeeAddResponse;
+import az.azal.libraff_book_store.response.EmployeeListResponse;
+import az.azal.libraff_book_store.response.EmployeeSingleResponse;
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
@@ -60,6 +65,22 @@ public class EmployeeService {
 
 		mapper.map(employee, response);
 		return response;
+	}
+
+	public EmployeeListResponse getAll() {
+
+		List<EmployeeEntity> employees = repository.findAll();
+		List<EmployeeSingleResponse> responseList = new ArrayList<EmployeeSingleResponse>();
+
+		for (EmployeeEntity employee : employees) {
+			EmployeeSingleResponse response = new EmployeeSingleResponse();
+			mapper.map(employee, response);
+			responseList.add(response);
+		}
+
+		EmployeeListResponse listResponse = new EmployeeListResponse();
+		listResponse.setEmployees(responseList);
+		return listResponse;
 	}
 
 }
