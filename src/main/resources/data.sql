@@ -30,3 +30,8 @@ INSERT INTO book_authors (book_id, author_id) VALUES
 (3, 3),
 (4, 3); -- Clean Code (Book 3) linked to Robert Martin (Author 3)
 
+INSERT INTO positions (name, min_salary, max_salary) VALUES 
+('CASHIER', 800.0, 1500.0),
+('SALES_REPRESENTATIVE', 900.0, 1500.0),
+('CHIEF_SALES_REPRESENTATIVE', 1200.0, 2000.0),
+('STORE_MANAGER', 3450.0, 4800.0);

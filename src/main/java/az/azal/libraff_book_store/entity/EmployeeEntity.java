@@ -1,12 +1,19 @@
 package az.azal.libraff_book_store.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDate;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -30,7 +37,7 @@ public class EmployeeEntity {
 
 	private Boolean isActive;
 
-	private Integer positionId; // 1 - Kassir, 2 - Müdir, ...
+	// private Integer positionId; // 1 - Kassir, 2 - Müdir, ...
 
 	private String email;
 
@@ -45,4 +52,8 @@ public class EmployeeEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id")
 	private StoreEntity store;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "position_id")
+	private PositionEntity position;
 }

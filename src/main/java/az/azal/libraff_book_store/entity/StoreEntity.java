@@ -13,10 +13,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 
@@ -36,9 +38,9 @@ public class StoreEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "company_id")
-	private CompanyEntity company; 
+	private CompanyEntity company;
 
-   @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
-    private List<EmployeeEntity> employees;
+	@OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
+	private List<EmployeeEntity> employees;
 
 }
