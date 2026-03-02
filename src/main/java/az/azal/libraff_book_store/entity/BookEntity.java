@@ -33,8 +33,6 @@ public class BookEntity {
 
 	private String name;
 
-	private String genre;
-
 	private LocalDateTime datePublished;
 
 	private BigDecimal purchasePrice;
@@ -56,5 +54,9 @@ public class BookEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id")
 	private StoreEntity store;
+
+	@ManyToOne
+	@JoinColumn(name = "genre_id")
+	private GenreEntity genre;
 
 }

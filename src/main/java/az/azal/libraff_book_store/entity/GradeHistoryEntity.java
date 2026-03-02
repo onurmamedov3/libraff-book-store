@@ -1,6 +1,6 @@
 package az.azal.libraff_book_store.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,38 +20,25 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "employees")
-public class EmployeeEntity {
+@Table(name = "grade_history")
+public class GradeHistoryEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	private String FIN;
-
-	private String name;
-
-	private String surname;
-
-	private String password;
-
-	private Boolean isActive;
-
-	private String email;
-
-	private String phone;
-
-	private Double salary;
-
-	private LocalDate dateEmployed;
-
-	private LocalDate dateUnemployed;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "employee_id")
+	private EmployeeEntity employee;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "store_id")
-	private StoreEntity store;
+	@JoinColumn(name = "bonus_id")
+	private GradeStructureEntity gradeStructure;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "position_id")
 	private PositionEntity position;
+
+	private LocalDateTime bonusDate;
+
 }

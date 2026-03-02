@@ -10,11 +10,14 @@ INSERT INTO stores (name, address, phone, company_id) VALUES
 ('Libraff Park Bulvar', 'Neftchilar Ave, Baku', '+994 12 598 00 01', 1);
 
 -- 2. INSERT BOOKS (Linked to store_id)
-INSERT INTO books (name, genre, date_published, purchase_price, sales_price, store_id) VALUES 
-('The Great Gatsby', 'Classic', '1925-04-10', 10.50, 15.99, 1),
-('1984', 'Dystopian', '1949-06-08', 8.00, 12.50, 1),
-('Clean Code', 'Technology', '2008-08-01', 35.00, 45.00, 2),
-('The Pragmatic Programmer', 'Technology', '1999-10-20', 29.99, 39.99, 1);
+INSERT INTO genres (name) VALUES ('Fiction'), ('Dystopian'), ('Technology');
+
+
+INSERT INTO books (name, date_published, purchase_price, sales_price, store_id, genre_id) VALUES
+('The Great Gatsby',          '1925-04-10', 10.50, 15.99, 1, 1),  -- Fiction
+('1984',                      '1949-06-08',  8.00, 12.50, 1, 2),  -- Dystopian
+('Clean Code',                '2008-08-01', 35.00, 45.00, 2, 3),  -- Technology
+('The Pragmatic Programmer',  '1999-10-20', 29.99, 39.99, 1, 3);  -- Technology
 
 -- 3. INSERT AUTHORS (No book_id here!)
 INSERT INTO authors (name, surname, email) VALUES 
