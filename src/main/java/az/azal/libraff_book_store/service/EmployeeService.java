@@ -19,6 +19,7 @@ import az.azal.libraff_book_store.request.EmployeeAddRequest;
 import az.azal.libraff_book_store.response.EmployeeAddResponse;
 import az.azal.libraff_book_store.response.EmployeeListResponse;
 import az.azal.libraff_book_store.response.EmployeeSingleResponse;
+import jakarta.transaction.Transactional;
 
 @Service
 public class EmployeeService {
@@ -35,6 +36,10 @@ public class EmployeeService {
 	@Autowired
 	private ModelMapper mapper;
 
+	@Autowired
+	private EmployeeWorkHistoryService employeeHistoryService;
+
+	@Transactional
 	public EmployeeAddResponse add(EmployeeAddRequest request) {
 
 		// 1. Uniqueness Validations
@@ -82,7 +87,11 @@ public class EmployeeService {
 
 		repository.save(employee);
 
-		// 6. Construct and Map Response DTO
+		// 6. Record employee history
+
+		employeeHistoryService.recordHistory(employee, true);
+
+		// 7. Construct and Map Response DTO
 
 		EmployeeAddResponse response = new EmployeeAddResponse();
 
