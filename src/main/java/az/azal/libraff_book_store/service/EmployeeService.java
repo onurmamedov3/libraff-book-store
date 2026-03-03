@@ -2,6 +2,7 @@ package az.azal.libraff_book_store.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,5 +119,55 @@ public class EmployeeService {
 		listResponse.setEmployees(responseList);
 		return listResponse;
 	}
+
+	public EmployeeSingleResponse findEmployeeById(Integer id) {
+
+		Optional<EmployeeEntity> optional = repository.findById(id);
+		EmployeeEntity employee = null;
+
+		if (optional.isPresent()) {
+			employee = optional.get();
+		} else {
+			throw new MyException("Employee not found!", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND);
+		}
+
+		EmployeeSingleResponse response = new EmployeeSingleResponse();
+		mapper.map(employee, response);
+		return response;
+
+	}
+
+	@Transactional
+	public void deleteEmployeeById(Integer id) {
+
+		EmployeeEntity employee = repository.findById(id)
+				.orElseThrow(() -> new MyException("Employee not found!", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+
+		if (!employee.getIsActive()) {
+			throw new MyException("Employee is already inactive!", "ALREADY_INACTIVE", HttpStatus.CONFLICT);
+		}
+
+		employeeHistoryService.recordHistory(employee, false);
+
+		employee.setIsActive(false);
+		repository.save(employee);
+
+	}
+//
+//	public void patchEmployee(EmployeeUpdateRequest updateRequest) {
+//		
+//		EmployeeEntity employee = repository.findById(updateRequest.getId())
+//	            .orElseThrow(() -> new MyException("Employee not found", "NOT_FOUND", HttpStatus.NOT_FOUND));
+//		
+//		Integer id = updateRequest.getId();
+//		Optional<EmployeeEntity> optional = repository.findById(id);
+//
+//		if (optional.isEmpty()) {
+//			throw new MyException("Employee id not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND);
+//		}
+//		employee = optional.get();
+//		mapper.map(optional, employee);
+//
+//	}
 
 }
