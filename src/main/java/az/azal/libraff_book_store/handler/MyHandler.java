@@ -25,9 +25,6 @@ public class MyHandler {
 		MyErrorResponse resp = new MyErrorResponse();
 		BindingResult br = e.getBr();
 
-		// HttpStatus status = (e.getHttpStatus() != null) ? e.getHttpStatus() :
-		// HttpStatus.BAD_REQUEST;
-
 		if (br != null) {
 			List<FieldError> fieldErrors = br.getFieldErrors();
 			List<MyFieldError> myList = new ArrayList<MyFieldError>();

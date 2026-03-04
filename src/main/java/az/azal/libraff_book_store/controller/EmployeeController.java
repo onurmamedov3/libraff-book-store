@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.request.EmployeeAddRequest;
+import az.azal.libraff_book_store.request.EmployeeUpdateRequest;
 import az.azal.libraff_book_store.response.EmployeeAddResponse;
 import az.azal.libraff_book_store.response.EmployeeListResponse;
 import az.azal.libraff_book_store.response.EmployeeSingleResponse;
@@ -30,7 +32,6 @@ public class EmployeeController {
 	@PostMapping
 	public ResponseEntity<EmployeeAddResponse> addEmployee(@Valid @RequestBody EmployeeAddRequest request,
 			BindingResult br) {
-
 		if (br.hasErrors()) {
 			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
 		}
@@ -54,13 +55,13 @@ public class EmployeeController {
 		return ResponseEntity.noContent().build();
 	}
 
-//	@PatchMapping
-//	public ResponseEntity<?> patchEmployee(@Valid @RequestBody EmployeeUpdateRequest request, BindingResult br) {
-//		if (br.hasErrors()) {
-//			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
-//		}
-//		service.patchEmployee(request);
-//		return ResponseEntity.noContent().build();
-//	}
+	@PatchMapping
+	public ResponseEntity<?> patchEmployee(@Valid @RequestBody EmployeeUpdateRequest request, BindingResult br) {
+		if (br.hasErrors()) {
+			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+		}
+		service.patchEmployee(request);
+		return ResponseEntity.noContent().build();
+	}
 
 }
