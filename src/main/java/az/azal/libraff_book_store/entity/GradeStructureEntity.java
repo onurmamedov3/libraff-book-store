@@ -1,5 +1,6 @@
 package az.azal.libraff_book_store.entity;
 
+import az.azal.libraff_book_store.enums.GradeFrequency;
 import az.azal.libraff_book_store.enums.GradeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -33,5 +34,8 @@ public class GradeStructureEntity {
 
 	@Enumerated(EnumType.STRING)
 	private GradeType bonusType;
+
+	@Enumerated(EnumType.STRING)
+	private GradeFrequency bonusFrequency;
 
 }

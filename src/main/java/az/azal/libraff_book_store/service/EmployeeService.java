@@ -164,6 +164,11 @@ public class EmployeeService {
 		EmployeeEntity employee = repository.findById(updateRequest.getId())
 				.orElseThrow(() -> new MyException("Employee not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
 
+		// 1. Check if the user is attempting to change the immutable FIN
+		if (updateRequest.getFIN() != null && !updateRequest.getFIN().equals(employee.getFIN())) {
+			throw new MyException("FIN is immutable and cannot be changed!", "IMMUTABLE_FIELD", HttpStatus.BAD_REQUEST);
+		}
+
 		// Dəyişiklikləri izləmək üçün köhnə dəyərləri yadda saxlayırıq (Tarixçə üçün)
 		Integer oldPositionId = employee.getPosition() != null ? employee.getPosition().getId() : null;
 		Double oldSalary = employee.getSalary();
@@ -228,8 +233,10 @@ public class EmployeeService {
 
 		if (updateRequest.getSalary() != null && !updateRequest.getSalary().equals(oldSalary))
 			isHistoryChanged = true;
+
 		if (updateRequest.getPositionId() != null && !updateRequest.getPositionId().equals(oldPositionId))
 			isHistoryChanged = true;
+
 		if (updateRequest.getStoreId() != null && !updateRequest.getStoreId().equals(oldStoreId))
 			isHistoryChanged = true;
 

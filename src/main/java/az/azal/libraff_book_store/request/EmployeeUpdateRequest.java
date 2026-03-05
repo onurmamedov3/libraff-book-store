@@ -22,7 +22,7 @@ public class EmployeeUpdateRequest {
 	private Integer id;
 
 	@Size(min = 7, max = 7, message = "FIN code must be exactly 7 characters")
-	@Column(unique = true)
+	@Column(name = "fin", nullable = false, unique = true, updatable = false)
 	private String FIN;
 
 	private String name;

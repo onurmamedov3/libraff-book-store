@@ -20,6 +20,6 @@ public class GenreEntity {
 
 	private String name;
 
-//    @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private List<BookEntity> books;
+//	@OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//	private List<BookEntity> books;
 }
