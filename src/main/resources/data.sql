@@ -33,6 +33,14 @@ INSERT INTO book_authors (book_id, author_id) VALUES
 (3, 3),
 (4, 3); -- Clean Code (Book 3) linked to Robert Martin (Author 3)
 
+INSERT INTO book_stocks (book_id, store_id, quantity, last_updated) VALUES
+(1, 1, 50,  CURRENT_TIMESTAMP), -- The Great Gatsby in Libraff Fountain Square
+(2, 1, 30,  CURRENT_TIMESTAMP), -- 1984 in Libraff Fountain Square
+(3, 2, 15,  CURRENT_TIMESTAMP), -- Clean Code in Libraff Park Bulvar
+(4, 1, 20,  CURRENT_TIMESTAMP),
+(1, 2, 10, CURRENT_TIMESTAMP), 
+(2, 2, 5,  CURRENT_TIMESTAMP);
+
 INSERT INTO positions (name, min_salary, max_salary) VALUES 
 ('CASHIER', 800.0, 1500.0),
 ('SALES_REPRESENTATIVE', 900.0, 1500.0),
