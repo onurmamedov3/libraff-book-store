@@ -26,6 +26,14 @@ public class TransactionHistoryService {
 	@Transactional
 	public void sellBook(Map<Integer, Integer> soldBooks, Integer storeId, Integer employeeId) {
 
+		EmployeeEntity employee = employeeRepository.findById(employeeId)
+				.orElseThrow(() -> new MyException("Employee not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+
+		if (employee.getIsActive() != true) {
+			throw new MyException("Unemployed employees cannot perform this operation!", "UNAUTHORIZED_OPERATION",
+					HttpStatus.BAD_REQUEST);
+		}
+
 		for (Map.Entry<Integer, Integer> entry : soldBooks.entrySet()) {
 			Integer bookId = entry.getKey();
 			Integer quantityToSell = entry.getValue();
@@ -53,9 +61,6 @@ public class TransactionHistoryService {
 
 			history.setStore(stock.getStore());
 			history.setTransactionDate(java.time.LocalDate.now());
-
-			EmployeeEntity employee = employeeRepository.findById(employeeId).orElseThrow(
-					() -> new MyException("Employee not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
 			history.setEmployee(employee);
 
 			historyRepository.save(history);

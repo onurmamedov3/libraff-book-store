@@ -46,3 +46,14 @@ INSERT INTO positions (name, min_salary, max_salary) VALUES
 ('SALES_REPRESENTATIVE', 900.0, 1500.0),
 ('CHIEF_SALES_REPRESENTATIVE', 1200.0, 2000.0),
 ('STORE_MANAGER', 3450.0, 4800.0);
+
+
+INSERT INTO employees (FIN, name, surname, password, is_active, email, phone, salary, date_employed, store_id, position_id) VALUES 
+('AZ11234', 'Rafiq', 'Şiriyev', 'pass123', TRUE, 'rafiq.shiriyev@store.com', '+994505551111', 2000.00, '2023-09-01', 1, 1),
+('AZ11235', 'Nərmin', 'Məmmədova', 'pass456', TRUE, 'nermin.mammadova@store.com', '+994505552222', 3000.00, '2022-05-15', 1, 2),
+('AZ11236', 'Əhməd', 'Quliyev', 'pass789', TRUE, 'ahmad.guliyev@store.com', '+994505553333', 4500.00, '2021-01-20', 1, 3);
+
+
+
+
+

@@ -1,5 +1,7 @@
 package az.azal.libraff_book_store.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import az.azal.libraff_book_store.entity.EmployeeEntity;
@@ -11,5 +13,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Intege
 	boolean existsByEmail(String email);
 
 	boolean existsByPhone(String phone);
+
+	List<EmployeeEntity> findAllByIsActiveTrue();
 
 }
