@@ -32,6 +32,8 @@ public class GradeStructureEntity {
 
 	private Double bonusPercentage;
 
+	private Double minSalesThreshold;
+
 	@Enumerated(EnumType.STRING)
 	private GradeType bonusType;
 

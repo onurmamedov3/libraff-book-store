@@ -17,7 +17,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j // for logging
 @Service
 @RequiredArgsConstructor
 public class PayrollService {
