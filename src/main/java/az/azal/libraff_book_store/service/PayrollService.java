@@ -10,8 +10,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.EmployeeEntity;
+import az.azal.libraff_book_store.entity.GradeStructureEntity;
 import az.azal.libraff_book_store.entity.SalaryHistoryEntity;
 import az.azal.libraff_book_store.repository.EmployeeRepository;
+import az.azal.libraff_book_store.repository.GradePositionRepository;
+import az.azal.libraff_book_store.repository.GradeStoreRepository;
 import az.azal.libraff_book_store.repository.SalaryHistoryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,15 +26,23 @@ import lombok.extern.slf4j.Slf4j;
 public class PayrollService {
 
 	private final SalaryHistoryRepository salaryHistoryRepository;
+
 	private final EmployeeRepository employeeRepository;
 
+	private final GradeService gradeService;
+
+	private final GradePositionRepository gradePositionRepository;
+
+	private final GradeStoreRepository gradeStoreRepository;
+
 	// @Scheduled(cron = "0 0 0 1 * *") // Real: 1st day of every month
-	@Scheduled(cron = "*/10 * * * * *") // Testing: Every 10 seconds
+	@Scheduled(cron = "*/15 * * * * *") // Testing: Every 10 seconds
 	@Transactional
 	public void payMonthlySalary() {
 		log.info("Starting automated payroll processing...");
 
-		String currentPeriod = YearMonth.now().toString();
+		// YearMonth.now().minusMonths(1);
+		String currentPeriod = YearMonth.now().minusMonths(1).toString();
 
 		List<EmployeeEntity> employees = employeeRepository.findAllByIsActiveTrue();
 
@@ -53,18 +64,39 @@ public class PayrollService {
 			return;
 		}
 
-		Double salaryAmount = calculateSalary(employee, currentPeriod);
+		YearMonth yearMonth = YearMonth.parse(currentPeriod);
+		LocalDate periodStart = yearMonth.atDay(1);
+		LocalDate periodEnd = yearMonth.atEndOfMonth();
 
-		saveSalaryHistory(employee, salaryAmount, currentPeriod);
+		Double salaryAmount = calculateSalary(employee, periodStart, periodEnd);
+
+		Double employeeBonus = 0.0;
+		Double storeBonus = 0.0;
+
+		GradeStructureEntity employeeGrade = gradePositionRepository.findByPositionId(employee.getPosition().getId());
+
+		if (employeeGrade != null) {
+			employeeBonus = gradeService.calculateTotalBonusForEmployee(employee, periodStart, periodEnd,
+					employeeGrade);
+		}
+
+		GradeStructureEntity storeGrade = gradeStoreRepository.findByStoreId(employee.getStore().getId());
+
+		if (storeGrade != null) {
+			storeBonus = gradeService.calculateTotalBonusForStore(employee, periodStart, periodEnd, storeGrade);
+		}
+
+		Double totalBonus = employeeBonus + storeBonus;
+
+		saveSalaryHistory(employee, salaryAmount, totalBonus, currentPeriod);
 		log.info("Successfully processed salary for Employee: {}", employee.getName());
 	}
 
-	private Double calculateSalary(EmployeeEntity employee, String currentPeriod) {
-		YearMonth yearMonth = YearMonth.parse(currentPeriod);
-		LocalDate startOfMonth = yearMonth.atDay(1);
+	private Double calculateSalary(EmployeeEntity employee, LocalDate startOfMonth, LocalDate periodEnd) {
+
 		LocalDate hireDate = employee.getDateEmployed();
 
-		// LOGIC: If hired before this month started, give full salary.
+		// If hired before this month started, give full salary.
 		if (!hireDate.isAfter(startOfMonth)) { // alternative: hireDate.getDayOfMonth() == 1
 			return employee.getSalary();
 		}
@@ -72,7 +104,7 @@ public class PayrollService {
 		// If the employee is hired after 1st day of month
 		LocalDate endOfMonth = hireDate.with(TemporalAdjusters.lastDayOfMonth());
 		long daysWorked = ChronoUnit.DAYS.between(hireDate, endOfMonth) + 1;
-		int totalDaysInMonth = yearMonth.lengthOfMonth();
+		int totalDaysInMonth = startOfMonth.lengthOfMonth();
 
 		double proRatedSalary = (employee.getSalary() / totalDaysInMonth) * daysWorked;
 
@@ -80,14 +112,15 @@ public class PayrollService {
 		return Math.round(proRatedSalary * 100.0) / 100.0;
 	}
 
-	private void saveSalaryHistory(EmployeeEntity employee, Double salaryAmount, String currentPeriod) {
+	private void saveSalaryHistory(EmployeeEntity employee, Double salaryAmount, Double totalBonus,
+			String currentPeriod) {
 		SalaryHistoryEntity history = new SalaryHistoryEntity();
 
 		history.setEmployee(employee);
 		history.setSalaryAmount(salaryAmount);
 
-		// history.setBonusAmount(0.0);
-		history.setTotalAmount(salaryAmount + 0.0);
+		history.setBonusAmount(totalBonus);
+		history.setTotalAmount(salaryAmount + totalBonus);
 
 		history.setStore(employee.getStore());
 		history.setPayPeriod(currentPeriod);

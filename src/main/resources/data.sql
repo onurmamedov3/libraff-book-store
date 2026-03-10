@@ -49,9 +49,41 @@ INSERT INTO positions (name, min_salary, max_salary) VALUES
 
 
 INSERT INTO employees (FIN, name, surname, password, is_active, email, phone, salary, date_employed, store_id, position_id) VALUES 
-('AZ11234', 'Rafiq', 'Şiriyev', 'pass123', TRUE, 'rafiq.shiriyev@store.com', '+994505551111', 2000.00, '2023-09-01', 1, 1),
-('AZ11235', 'Nərmin', 'Məmmədova', 'pass456', TRUE, 'nermin.mammadova@store.com', '+994505552222', 3000.00, '2022-05-15', 1, 2),
-('AZ11236', 'Əhməd', 'Quliyev', 'pass789', TRUE, 'ahmad.guliyev@store.com', '+994505553333', 4500.00, '2021-01-20', 1, 3);
+('AZ11234', 'Rafiq', 'Şiriyev', 'pass123', TRUE, 'rafiq.shiriyev@store.com', '+994505551111', 2000.00, '2026-03-02', 1, 1),
+('AZ11235', 'Nərmin', 'Məmmədova', 'pass456', TRUE, 'nermin.mammadova@store.com', '+994505552222', 3000.00, '2026-02-17', 1, 2),
+('AZ11236', 'Əhməd', 'Quliyev', 'pass789', TRUE, 'ahmad.guliyev@store.com', '+994505553333', 4500.00, '2026-02-20', 1, 3);
+
+
+
+INSERT INTO grade_structure (bonus_name, bonus_amount, bonus_percentage, min_sales_threshold,bonus_type, target_type, bonus_frequency) VALUES 
+-- 1. Kassirlər üçün aylıq 100 AZN sabit bonus (Hədəf: 2000 AZN satış)
+('Kassir Aylıq Sabit', 100.0, NULL, 15.0,'GRADE1' ,'EMPLOYEE', 'MONTHLY'),
+-- 2. Satış təmsilçiləri üçün aylıq 5% bonus (Hədəf: 5000 AZN satış)
+('Satış Təmsilçisi Faiz', NULL, 5, 30.0,'GRADE2' , 'EMPLOYEE', 'MONTHLY'),
+-- 3. Mağaza hədəfi keçəndə illik 500 AZN bonus (Hədəf: 100,000 AZN satış)
+('Mağaza İllik Mükafat', 500.0, NULL, 100000.0,'GRADE2', 'STORE', 'ANNUAL'),
+
+('Mağaza Aylıq Mükafat', 75.0, NULL, 6000.0,'GRADE1', 'STORE', 'MONTHLY'),
+
+('Baş Satış Təmsilçisi Faiz', NULL, 20, 5000.0,'GRADE3' , 'EMPLOYEE', 'MONTHLY');
+
+
+-- "Kassir Aylıq Sabit" (bonus_id=1) qaydasını Kassir vəzifəsinə (position_id=1) bağlayırıq
+INSERT INTO grade_position (position_id, bonus_id) VALUES (1, 1);
+
+-- "Satış Təmsilçisi Faiz" (bonus_id=2) qaydasını Satış Təmsilçisi vəzifəsinə (position_id=2) bağlayırıq
+INSERT INTO grade_position (position_id, bonus_id) VALUES (2, 2);
+
+-- İllik bonusu (bonus_id=3) hər iki mağaza üçün aktiv edirik
+INSERT INTO grade_store (store_id, bonus_id) VALUES 
+(1, 3),
+(2, 3);
+--(1, 4),
+--(2, 4);
+
+
+
+
 
 
 
