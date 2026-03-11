@@ -57,27 +57,32 @@ INSERT INTO employees (FIN, name, surname, password, is_active, email, phone, sa
 
 INSERT INTO grade_structure (bonus_name, bonus_amount, bonus_percentage, min_sales_threshold,bonus_type, target_type, bonus_frequency) VALUES 
 -- 1. Kassirlər üçün aylıq 100 AZN sabit bonus (Hədəf: 2000 AZN satış)
-('Kassir Aylıq Sabit', 100.0, NULL, 15.0,'GRADE1' ,'EMPLOYEE', 'MONTHLY'),
+('Kassir Aylıq Sabit', 100.0, NULL, 15.0, 'GRADE1' ,'EMPLOYEE', 'MONTHLY'),
 -- 2. Satış təmsilçiləri üçün aylıq 5% bonus (Hədəf: 5000 AZN satış)
-('Satış Təmsilçisi Faiz', NULL, 5, 30.0,'GRADE2' , 'EMPLOYEE', 'MONTHLY'),
+('Satış Təmsilçisi Faiz', NULL, 5, 30.0, 'GRADE2' , 'EMPLOYEE', 'MONTHLY'),
+('Satış Təmsilçisi Faiz', NULL, 10, 150.0, 'GRADE3' , 'EMPLOYEE', 'MONTHLY'),
 -- 3. Mağaza hədəfi keçəndə illik 500 AZN bonus (Hədəf: 100,000 AZN satış)
-('Mağaza İllik Mükafat', 500.0, NULL, 100000.0,'GRADE2', 'STORE', 'ANNUAL'),
+('Mağaza İllik Mükafat', 500.0, NULL, 10000.0,'GRADE2', 'STORE', 'ANNUAL'),
 
-('Mağaza Aylıq Mükafat', 75.0, NULL, 6000.0,'GRADE1', 'STORE', 'MONTHLY'),
+('Mağaza Aylıq Mükafat', 75.0, NULL, 60.0,'GRADE1', 'STORE', 'MONTHLY'),
+
+('Mağaza Aylıq Mükafat', NULL, 8, 180.0,'GRADE2', 'STORE', 'MONTHLY'),
 
 ('Baş Satış Təmsilçisi Faiz', NULL, 20, 5000.0,'GRADE3' , 'EMPLOYEE', 'MONTHLY');
 
-
 -- "Kassir Aylıq Sabit" (bonus_id=1) qaydasını Kassir vəzifəsinə (position_id=1) bağlayırıq
 INSERT INTO grade_position (position_id, bonus_id) VALUES (1, 1);
-
 -- "Satış Təmsilçisi Faiz" (bonus_id=2) qaydasını Satış Təmsilçisi vəzifəsinə (position_id=2) bağlayırıq
 INSERT INTO grade_position (position_id, bonus_id) VALUES (2, 2);
-
+INSERT INTO grade_position (position_id, bonus_id) VALUES (3, 2);
+INSERT INTO grade_position (position_id, bonus_id) VALUES (2, 3);
+INSERT INTO grade_position (position_id, bonus_id) VALUES (3, 3);
 -- İllik bonusu (bonus_id=3) hər iki mağaza üçün aktiv edirik
 INSERT INTO grade_store (store_id, bonus_id) VALUES 
-(1, 3),
-(2, 3);
+(1, 4),
+(2, 4),
+(1, 5),
+(1, 6);
 --(1, 4),
 --(2, 4);
 

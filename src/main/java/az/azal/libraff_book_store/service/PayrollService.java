@@ -36,13 +36,13 @@ public class PayrollService {
 	private final GradeStoreRepository gradeStoreRepository;
 
 	// @Scheduled(cron = "0 0 0 1 * *") // Real: 1st day of every month
-	@Scheduled(cron = "*/15 * * * * *") // Testing: Every 10 seconds
+	@Scheduled(cron = "*/15 * * * * *") // Testing: Every 15 seconds
 	@Transactional
 	public void payMonthlySalary() {
 		log.info("Starting automated payroll processing...");
 
 		// YearMonth.now().minusMonths(1);
-		String currentPeriod = YearMonth.now().minusMonths(1).toString();
+		String currentPeriod = YearMonth.now().toString();
 
 		List<EmployeeEntity> employees = employeeRepository.findAllByIsActiveTrue();
 
@@ -68,22 +68,30 @@ public class PayrollService {
 		LocalDate periodStart = yearMonth.atDay(1);
 		LocalDate periodEnd = yearMonth.atEndOfMonth();
 
+		if (employee.getDateEmployed().isAfter(periodEnd)) {
+			log.warn("Skipping Employee ID {}: Employeed after current month {}", employee.getId(), currentPeriod);
+			return;
+		}
+
 		Double salaryAmount = calculateSalary(employee, periodStart, periodEnd);
 
 		Double employeeBonus = 0.0;
 		Double storeBonus = 0.0;
 
-		GradeStructureEntity employeeGrade = gradePositionRepository.findByPositionId(employee.getPosition().getId());
+		List<GradeStructureEntity> employeeGrades = gradePositionRepository
+				.findAllGradesByPositionId(employee.getPosition().getId());
 
-		if (employeeGrade != null) {
+		if (employeeGrades != null) {
 			employeeBonus = gradeService.calculateTotalBonusForEmployee(employee, periodStart, periodEnd,
-					employeeGrade);
+					employeeGrades);
 		}
+		;
 
-		GradeStructureEntity storeGrade = gradeStoreRepository.findByStoreId(employee.getStore().getId());
+		List<GradeStructureEntity> storeGrades = gradeStoreRepository
+				.findAllGradesByStoreId(employee.getStore().getId());
 
-		if (storeGrade != null) {
-			storeBonus = gradeService.calculateTotalBonusForStore(employee, periodStart, periodEnd, storeGrade);
+		if (storeGrades != null) {
+			storeBonus = gradeService.calculateTotalBonusForStore(employee, periodStart, periodEnd, storeGrades);
 		}
 
 		Double totalBonus = employeeBonus + storeBonus;

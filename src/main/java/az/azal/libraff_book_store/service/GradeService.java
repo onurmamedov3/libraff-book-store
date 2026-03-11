@@ -2,12 +2,13 @@ package az.azal.libraff_book_store.service;
 
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Comparator;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.EmployeeEntity;
 import az.azal.libraff_book_store.entity.GradeStructureEntity;
-import az.azal.libraff_book_store.repository.EmployeeRepository;
 import az.azal.libraff_book_store.repository.TransactionHistoryRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -17,16 +18,16 @@ public class GradeService {
 
 	private final TransactionHistoryRepository transactionHistoryRepository;
 
-	private final EmployeeRepository employeeRepository;
+	// private final EmployeeRepository employeeRepository;
 
 	// For employee
 	public Double calculateTotalBonusForEmployee(EmployeeEntity employee, LocalDate periodStart, LocalDate periodEnd,
-			GradeStructureEntity gradeStructure) {
+			List<GradeStructureEntity> gradeStructures) {
 
 		LocalDate startDate;
 		LocalDate endDate;
 
-		switch (gradeStructure.getBonusFrequency()) {
+		switch (gradeStructures.get(0).getBonusFrequency()) {
 
 		case MONTHLY -> {
 			startDate = periodEnd.with(TemporalAdjusters.firstDayOfMonth());
@@ -36,7 +37,7 @@ public class GradeService {
 			int month = periodEnd.getMonthValue(); // return month in integer value: e.g. April -> 4 etc.
 			int seasonStartMonth = ((month - 1) / 3) * 3 + 1; // formula to find start month of the season
 			startDate = LocalDate.of(periodEnd.getYear(), seasonStartMonth, 1); // year, month, day
-			endDate = startDate.plusMonths(3).minusDays(1); // 10.03.2026 - > 31.05.2026
+			endDate = startDate.plusMonths(3).minusDays(1); // 10.03.2026 - > 31.03.2026
 
 		}
 		case ANNUAL -> {
@@ -49,17 +50,17 @@ public class GradeService {
 		}
 		;
 
-		return calculateBonus(employee.getId(), employee.getSalary(), true, startDate, endDate, gradeStructure);
+		return calculateBonus(employee.getId(), employee.getSalary(), true, startDate, endDate, gradeStructures);
 
 	}
 
 	// For store
 	public Double calculateTotalBonusForStore(EmployeeEntity employee, LocalDate periodStart, LocalDate periodEnd,
-			GradeStructureEntity gradeStructure) {
+			List<GradeStructureEntity> gradeStructures) {
 		LocalDate startDate;
 		LocalDate endDate;
 
-		switch (gradeStructure.getBonusFrequency()) {
+		switch (gradeStructures.get(0).getBonusFrequency()) {
 
 		case MONTHLY -> {
 			startDate = periodEnd.with(TemporalAdjusters.firstDayOfMonth());
@@ -82,11 +83,15 @@ public class GradeService {
 		}
 		;
 		return calculateBonus(employee.getStore().getId(), employee.getSalary(), false, startDate, endDate,
-				gradeStructure);
+				gradeStructures);
 	}
 
 	private Double calculateBonus(Integer targetId, Double employeeSalary, boolean isEmployee, LocalDate startDate,
-			LocalDate endDate, GradeStructureEntity gradeStructure) {
+			LocalDate endDate, List<GradeStructureEntity> gradeStructures) {
+
+		if (gradeStructures == null || gradeStructures.isEmpty()) {
+			return 0.0;
+		}
 
 		Double totalSales;
 
@@ -100,20 +105,23 @@ public class GradeService {
 			totalSales = 0.0;
 		}
 
-		if (totalSales >= gradeStructure.getMinSalesThreshold()) {
-
-			if (gradeStructure.getBonusAmount() != null && gradeStructure.getBonusAmount() > 0) {
-				return gradeStructure.getBonusAmount();
-			}
-			if (gradeStructure.getBonusPercentage() != null && gradeStructure.getBonusPercentage() > 0) {
-				return employeeSalary * (gradeStructure.getBonusPercentage() / 100);
-			}
-
-		}
-
+		final Double finalSales = totalSales;
 		// if the statament reached here, it means no bonus is calculated
 		// for the employee
-		return 0.0;
+		return gradeStructures.stream().filter(g -> finalSales >= g.getMinSalesThreshold())
+				.max(Comparator.comparing(GradeStructureEntity::getMinSalesThreshold)).map(g -> {
+					if (g.getBonusAmount() != null && g.getBonusAmount() > 0) {
+						if (g.getBonusPercentage() != null && g.getBonusPercentage() > 0) {
+							return g.getBonusAmount() + employeeSalary * (g.getBonusPercentage() / 100);
+						}
+						return g.getBonusAmount();
+					}
+					if (g.getBonusPercentage() != null && g.getBonusPercentage() > 0) {
+						return employeeSalary * (g.getBonusPercentage() / 100);
+					}
+
+					return 0.0;
+				}).orElse(0.0);
 
 	}
 
