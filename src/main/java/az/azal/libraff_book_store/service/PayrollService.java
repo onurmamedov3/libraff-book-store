@@ -35,8 +35,8 @@ public class PayrollService {
 
 	private final GradeStoreRepository gradeStoreRepository;
 
-	// @Scheduled(cron = "0 0 0 1 * *") // Real: 1st day of every month
-	@Scheduled(cron = "*/15 * * * * *") // Testing: Every 15 seconds
+	@Scheduled(cron = "0 0 0 1 * *") // Real: 1st day of every month
+	// @Scheduled(cron = "*/15 * * * * *") // Testing: Every 15 seconds
 	@Transactional
 	public void payMonthlySalary() {
 		log.info("Starting automated payroll processing...");
@@ -82,8 +82,7 @@ public class PayrollService {
 				.findAllGradesByPositionId(employee.getPosition().getId());
 
 		if (employeeGrades != null) {
-			employeeBonus = gradeService.calculateTotalBonusForEmployee(employee, periodStart, periodEnd,
-					employeeGrades);
+			employeeBonus = gradeService.calculateTotalBonusForEmployee(employee, periodEnd, employeeGrades);
 		}
 		;
 
@@ -91,7 +90,7 @@ public class PayrollService {
 				.findAllGradesByStoreId(employee.getStore().getId());
 
 		if (storeGrades != null) {
-			storeBonus = gradeService.calculateTotalBonusForStore(employee, periodStart, periodEnd, storeGrades);
+			storeBonus = gradeService.calculateTotalBonusForStore(employee, periodEnd, storeGrades);
 		}
 
 		Double totalBonus = employeeBonus + storeBonus;

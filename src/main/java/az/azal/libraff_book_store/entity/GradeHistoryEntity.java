@@ -1,6 +1,6 @@
 package az.azal.libraff_book_store.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -39,6 +39,10 @@ public class GradeHistoryEntity {
 	@JoinColumn(name = "position_id")
 	private PositionEntity position;
 
-	private LocalDateTime bonusDate;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id")
+	private StoreEntity store;
+
+	private LocalDate bonusDate;
 
 }
