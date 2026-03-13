@@ -20,8 +20,12 @@ import lombok.RequiredArgsConstructor;
 public class TransactionHistoryService {
 
 	private final BookStockRepository bookStockRepository;
+
 	private final TransactionHistoryRepository historyRepository;
+
 	private final EmployeeRepository employeeRepository;
+
+	private final DiscountService discountService;
 
 	@Transactional
 	public void sellBook(Map<Integer, Integer> soldBooks, Integer storeId, Integer employeeId) {
@@ -48,6 +52,8 @@ public class TransactionHistoryService {
 						HttpStatus.BAD_REQUEST);
 			}
 
+			Double finalDiscountedPrice = discountService.calculateDiscountedPrice(stock.getBook(), storeId);
+
 			// 3. Deduct Stock
 			stock.setQuantity(stock.getQuantity() - quantityToSell);
 			bookStockRepository.save(stock);
@@ -56,7 +62,7 @@ public class TransactionHistoryService {
 			TransactionHistoryEntity history = new TransactionHistoryEntity();
 			history.setBook(stock.getBook());
 			history.setQuantity(quantityToSell);
-			history.setSalesPrice(stock.getBook().getSalesPrice());
+			history.setSalesPrice(finalDiscountedPrice);
 			history.setPurchasePrice(stock.getBook().getPurchasePrice());
 
 			history.setStore(stock.getStore());
