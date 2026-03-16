@@ -160,9 +160,14 @@ public class EmployeeService {
 
 	@Transactional
 	public void patchEmployee(EmployeeUpdateRequest updateRequest) {
-		// 1. Find employee in the database
+
 		EmployeeEntity employee = repository.findById(updateRequest.getId())
 				.orElseThrow(() -> new MyException("Employee not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+
+		if (employee.getIsActive() != true) {
+			throw new MyException("Employee is inactive. Cannot perform the operation", "INACTIVE_EMPLOYEE",
+					HttpStatus.BAD_REQUEST);
+		}
 
 		// 1. Check if the user is attempting to change the immutable FIN
 		if (updateRequest.getFIN() != null && !updateRequest.getFIN().equals(employee.getFIN())) {
@@ -243,6 +248,24 @@ public class EmployeeService {
 		if (isHistoryChanged) {
 			employeeHistoryService.recordHistory(employee, employee.getIsActive());
 		}
+	}
+
+	@Transactional
+	public void rehireEmployeeById(Integer id) {
+
+		EmployeeEntity employee = repository.findById(id)
+				.orElseThrow(() -> new MyException("Employee not found!", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+
+		if (employee.getIsActive()) {
+			throw new MyException("Employee is already active!", "ALREADY_ACTIVE", HttpStatus.CONFLICT);
+		}
+
+		employeeHistoryService.recordHistory(employee, true);
+
+		employee.setIsActive(true);
+		employee.setDateUnemployed(null);
+
+		repository.save(employee);
 	}
 
 }

@@ -64,4 +64,12 @@ public class EmployeeController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@PatchMapping(path = "/{id}")
+	public ResponseEntity<?> rehireEmployee(@PathVariable Integer id) {
+
+		service.rehireEmployeeById(id);
+
+		return ResponseEntity.noContent().build();
+	}
+
 }
