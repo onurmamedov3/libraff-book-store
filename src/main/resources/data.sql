@@ -51,8 +51,8 @@ INSERT INTO positions (name, min_salary, max_salary) VALUES
 INSERT INTO employees (FIN, name, surname, password, is_active, email, phone, salary, date_employed, store_id, position_id) VALUES 
 ('AZ11234', 'Rafiq', 'Şiriyev', 'pass123', TRUE, 'rafiq.shiriyev@store.com', '+994505551111', 2000.00, '2026-03-02', 1, 1),
 ('AZ11235', 'Nərmin', 'Məmmədova', 'pass456', TRUE, 'nermin.mammadova@store.com', '+994505552222', 3000.00, '2026-02-17', 1, 2),
-('AZ11236', 'Əhməd', 'Quliyev', 'pass789', TRUE, 'ahmad.guliyev@store.com', '+994505553333', 4500.00, '2026-02-20', 1, 3);
-
+('AZ11236', 'Əhməd', 'Quliyev', 'pass789', TRUE, 'ahmad.guliyev@store.com', '+994505553333', 4500.00, '2026-02-20', 1, 3),
+('AZ99999', 'Huseyn', 'Zulfuqarov', 'pass789', TRUE, 'huseynzulfuqarov@store.com', '+994505559999', 4800.00, '2026-02-10', 1, 4);
 
 
 INSERT INTO grade_structure (bonus_name, bonus_amount, bonus_percentage, min_sales_threshold,bonus_type, target_type, bonus_frequency) VALUES 

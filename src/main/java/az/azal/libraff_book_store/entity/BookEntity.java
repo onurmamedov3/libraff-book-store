@@ -1,8 +1,8 @@
 package az.azal.libraff_book_store.entity;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -48,7 +48,7 @@ public class BookEntity {
 										// yalnız müraciət edildikdə (proxy vasitəsilə) SQL sorğusu göndərir.
 	@JoinTable( // foreign key üçün
 			name = "book_authors", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "author_id"))
-	private Set<AuthorEntity> authors = new HashSet<>();
+	private List<AuthorEntity> authors = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id")

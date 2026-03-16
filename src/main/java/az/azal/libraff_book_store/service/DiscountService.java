@@ -103,7 +103,9 @@ public class DiscountService {
 
 		Double discountedPercentage = discounts.get(0).getDiscountPercentage();
 
-		return book.getSalesPrice() * ((100 - discountedPercentage) / 100.0);
+		Double rawPrice = book.getSalesPrice() * ((100 - discountedPercentage) / 100.0);
+
+		return ((int) (rawPrice * 100)) / 100.0;
 	}
 
 	private void validateDiscountTargets(DiscountAddRequest request) {
