@@ -23,6 +23,7 @@ import az.azal.libraff_book_store.request.EmployeeUpdateRequest;
 import az.azal.libraff_book_store.response.EmployeeAddResponse;
 import az.azal.libraff_book_store.response.EmployeeListResponse;
 import az.azal.libraff_book_store.response.EmployeeSingleResponse;
+import az.azal.libraff_book_store.util.PositionConstants;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -80,22 +81,26 @@ public class EmployeeService {
 					.orElseThrow(() -> new MyException("Store Not Found!", "STORE_NOT_FOUND", HttpStatus.NOT_FOUND));
 		}
 
-		// 4. Map Request DTO to Entity and Set Relationships
+		// 4. Check position count limits
+
+		checkPositionLimit(storeEntity.getId(), position.getId());
+
+		// 5. Map Request DTO to Entity and Set Relationships
 
 		EmployeeEntity employee = new EmployeeEntity();
 		mapper.map(request, employee);
 		employee.setStore(storeEntity);
 		employee.setPosition(position);
 
-		// 5. Save to Database
+		// 6. Save to Database
 
 		repository.save(employee);
 
-		// 6. Record employee history
+		// 7. Record employee history
 
 		employeeHistoryService.recordHistory(employee, true);
 
-		// 7. Construct and Map Response DTO
+		// 8. Construct and Map Response DTO
 
 		EmployeeAddResponse response = new EmployeeAddResponse();
 
@@ -174,23 +179,32 @@ public class EmployeeService {
 			throw new MyException("FIN is immutable and cannot be changed!", "IMMUTABLE_FIELD", HttpStatus.BAD_REQUEST);
 		}
 
-		// Dəyişiklikləri izləmək üçün köhnə dəyərləri yadda saxlayırıq (Tarixçə üçün)
+		// We save the old values to track changes (for the history)
 		Integer oldPositionId = employee.getPosition() != null ? employee.getPosition().getId() : null;
 		Double oldSalary = employee.getSalary();
 		Integer oldStoreId = employee.getStore() != null ? employee.getStore().getId() : null;
 
-		// 2. TƏHLÜKƏSİZLİK ÜÇÜN LOKAL MAPPER YARADIRIQ
-		// (Beləliklə digər API-lərin qlobal mapper konfiqurasiyası pozulmur)
+		// Determine the effective store and position after the patch
+		Integer newStoreId = updateRequest.getStoreId() != null ? updateRequest.getStoreId() : oldStoreId;
+		Integer newPositionId = updateRequest.getPositionId() != null ? updateRequest.getPositionId() : oldPositionId;
+
+		// Only check limits if the employee is moving to a NEW store or getting a
+		// NEW position
+		if (!newStoreId.equals(oldStoreId) || !newPositionId.equals(oldPositionId)) {
+			checkPositionLimit(newStoreId, newPositionId);
+		}
+
+		// 2. CREATE A LOCAL MAPPER FOR SECURITY
 		ModelMapper patchMapper = new ModelMapper();
 		patchMapper.getConfiguration().setSkipNullEnabled(true).setMatchingStrategy(MatchingStrategies.STRICT);
 
-		// Yalnız null olmayan field-ləri köçürürük
+		// We only map non-null fields
 		patchMapper.map(updateRequest, employee);
 
 		boolean isHistoryChanged = false;
 
-		// 3. Əlaqəli cədvəlləri (Position, Store) əllə yeniləyirik (Əgər request-də
-		// göndərilibsə)
+		// 3. Manually update the related tables (Position, Store) (if sent in the
+		// request)
 		if (updateRequest.getPositionId() != null && !updateRequest.getPositionId().equals(oldPositionId)) {
 			PositionEntity newPosition = positionRepository.findById(updateRequest.getPositionId())
 					.orElseThrow(() -> new MyException("Position not found", "NOT_FOUND", HttpStatus.NOT_FOUND));
@@ -211,9 +225,10 @@ public class EmployeeService {
 
 		}
 
-		// Əgər vəzifə DEYİŞMƏYİB, amma yalnız maaş DEYİŞİBSƏ (ayrıca yoxlama)
+		// If the position has NOT CHANGED, but only the salary has CHANGED (separate
+		// verification)
 		if (updateRequest.getSalary() != null && !updateRequest.getSalary().equals(oldSalary)) {
-			// Hazırkı vəzifənin limitlərini yoxla
+			// Check the limits of the current task
 			PositionEntity currentPos = employee.getPosition();
 			if (updateRequest.getSalary() < currentPos.getMinSalary()
 					|| updateRequest.getSalary() > currentPos.getMaxSalary()) {
@@ -230,11 +245,11 @@ public class EmployeeService {
 			employee.setStore(newStore);
 		}
 
-		// 4. Bazaya yadda saxlayırıq
+		// 4. Save employee to
 		repository.save(employee);
 
-		// 5. Tarixçəni (History) yoxlayıb yazırıq
-		// Əgər maaş, vəzifə və ya mağaza dəyişibsə, yeni tarixçə yaradırıq
+		// 5. Check and write the history
+		// If the salary, position, or store has changed, create a new history
 
 		if (updateRequest.getSalary() != null && !updateRequest.getSalary().equals(oldSalary))
 			isHistoryChanged = true;
@@ -260,12 +275,34 @@ public class EmployeeService {
 			throw new MyException("Employee is already active!", "ALREADY_ACTIVE", HttpStatus.CONFLICT);
 		}
 
+		// Check if bringing this employee back exceeds the limit
+		if (employee.getStore() != null && employee.getPosition() != null) {
+			checkPositionLimit(employee.getStore().getId(), employee.getPosition().getId());
+		}
+
 		employeeHistoryService.recordHistory(employee, true);
 
 		employee.setIsActive(true);
 		employee.setDateUnemployed(null);
 
 		repository.save(employee);
+	}
+
+	private void checkPositionLimit(Integer storeId, Integer positionId) {
+		if (storeId == null || positionId == null)
+			return;
+
+		Integer limit = PositionConstants.LIMITS.get(positionId);
+
+		if (limit != null) {
+			int currentActiveCount = repository.countByStoreIdAndPositionIdAndIsActiveTrue(storeId, positionId);
+
+			if (currentActiveCount >= limit) {
+				throw new MyException(
+						"Cannot add employee. The limit for this position in the selected store has been reached.",
+						"POSITION_LIMIT_EXCEEDED", HttpStatus.BAD_REQUEST);
+			}
+		}
 	}
 
 }

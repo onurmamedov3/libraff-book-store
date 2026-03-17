@@ -16,4 +16,6 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Intege
 
 	List<EmployeeEntity> findAllByIsActiveTrue();
 
+	int countByStoreIdAndPositionIdAndIsActiveTrue(Integer storeId, Integer positionId);
+
 }
