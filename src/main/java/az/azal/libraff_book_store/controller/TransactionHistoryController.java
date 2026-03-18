@@ -21,6 +21,7 @@ public class TransactionHistoryController {
 	public ResponseEntity<?> sellBook(@RequestBody TransactionSaleRequest request) {
 
 		service.sellBook(request.getSoldBooks(), request.getStoreId(), request.getEmployeeId());
+
 		return ResponseEntity.ok().build();
 	}
 

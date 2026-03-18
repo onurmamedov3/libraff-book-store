@@ -10,14 +10,19 @@ INSERT INTO stores (name, address, phone, company_id) VALUES
 ('Libraff Park Bulvar', 'Neftchilar Ave, Baku', '+994 12 598 00 01', 1);
 
 -- 2. INSERT BOOKS (Linked to store_id)
-INSERT INTO genres (name) VALUES ('Fiction'), ('Dystopian'), ('Technology');
+INSERT INTO genres (name) VALUES ('Fiction'), ('Dystopian'), ('Technology'),('History/Non-fiction');
 
 
-INSERT INTO books (name, date_published,publication_amount, purchase_price,  sales_price, store_id, genre_id) VALUES
-('The Great Gatsby',          '1925-04-10',60, 10.50, 15.99, 1, 1),  -- Fiction
-('1984',                      '1949-06-08',35,  8.00, 12.50, 1, 2),  -- Dystopian
-('Clean Code',                '2008-08-01',15, 35.00, 45.00, 2, 3),  -- Technology
-('The Pragmatic Programmer',  '1999-10-20',20, 29.99, 39.99, 1, 3);  -- Technology
+INSERT INTO books (name, date_published, publication_amount, purchase_price, sales_price, store_id, genre_id) VALUES
+('The Great Gatsby', '1925-04-10',60, 10.50, 15.99, 1, 1), -- Fiction
+('1984', '1949-06-08',35, 8.00, 12.50, 1, 2), -- Dystopian
+('Clean Code', '2008-08-01',15, 35.00, 45.00, 2, 3), -- Technology
+('The Pragmatic Programmer', '1999-10-20',20, 29.99, 39.99, 1, 3), -- Technology
+('To Kill a Mockingbird', '1960-07-11',50, 9.00, 14.99, 1, 1), -- Fiction
+('Brave New World', '1932-08-01',40, 7.50, 11.99, 2, 2), -- Dystopian
+('Refactoring', '1999-07-08',10, 39.99, 54.99, 2, 3), -- Technology
+('Sapiens', '2011-09-04',30, 18.00, 25.00, 1, 4), -- History/Non-fiction
+('The Catcher in the Rye', '1951-07-16',45, 6.50, 10.99, 2, 1); -- Fiction
 
 -- 3. INSERT AUTHORS (No book_id here!)
 INSERT INTO authors (name, surname, email) VALUES 

@@ -14,13 +14,16 @@ public interface TransactionHistoryRepository extends JpaRepository<TransactionH
 
 	// 1. Get total sales for a specific STORE within a date range
 	@Query("SELECT COALESCE(SUM(t.salesPrice), 0) FROM TransactionHistoryEntity t " + "WHERE t.store.id = :storeId "
+			+ "AND t.transactionType = az.azal.libraff_book_store.enums.TransactionType.SALE "
 			+ "AND t.transactionDate BETWEEN :startDate AND :endDate")
 	Double getTotalSalesByStoreAndDateRange(@Param("storeId") Integer storeId, @Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);
 
 	// 2. Get total sales for a specific EMPLOYEE within a date range
 	@Query("SELECT COALESCE(SUM(t.salesPrice), 0) FROM TransactionHistoryEntity t "
-			+ "WHERE t.employee.id = :employeeId " + "AND t.transactionDate BETWEEN :startDate AND :endDate")
+			+ "WHERE t.employee.id = :employeeId "
+			+ "AND t.transactionType = az.azal.libraff_book_store.enums.TransactionType.SALE "
+			+ "AND t.transactionDate BETWEEN :startDate AND :endDate")
 	Double getTotalSalesByEmployeeAndDateRange(@Param("employeeId") Integer employeeId,
 			@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 

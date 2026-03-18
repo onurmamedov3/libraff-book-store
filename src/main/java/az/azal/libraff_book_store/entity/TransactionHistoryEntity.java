@@ -2,8 +2,11 @@ package az.azal.libraff_book_store.entity;
 
 import java.time.LocalDate;
 
+import az.azal.libraff_book_store.enums.TransactionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -38,6 +41,10 @@ public class TransactionHistoryEntity {
 
 	@Column(nullable = false)
 	private LocalDate transactionDate;
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private TransactionType transactionType;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id", nullable = false)

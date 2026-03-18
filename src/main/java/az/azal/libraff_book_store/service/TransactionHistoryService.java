@@ -1,5 +1,6 @@
 package az.azal.libraff_book_store.service;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import az.azal.libraff_book_store.entity.BookStockEntity;
 import az.azal.libraff_book_store.entity.EmployeeEntity;
 import az.azal.libraff_book_store.entity.TransactionHistoryEntity;
+import az.azal.libraff_book_store.enums.TransactionType;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.repository.BookStockRepository;
 import az.azal.libraff_book_store.repository.EmployeeRepository;
@@ -64,9 +66,10 @@ public class TransactionHistoryService {
 			history.setQuantity(quantityToSell);
 			history.setSalesPrice(finalDiscountedPrice);
 			history.setPurchasePrice(stock.getBook().getPurchasePrice());
+			history.setTransactionType(TransactionType.SALE);
 
 			history.setStore(stock.getStore());
-			history.setTransactionDate(java.time.LocalDate.now());
+			history.setTransactionDate(LocalDate.now());
 			history.setEmployee(employee);
 
 			historyRepository.save(history);
