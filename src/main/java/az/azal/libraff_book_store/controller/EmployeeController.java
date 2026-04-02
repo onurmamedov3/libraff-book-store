@@ -3,6 +3,7 @@ package az.azal.libraff_book_store.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,7 @@ public class EmployeeController {
 	private EmployeeService service;
 
 	@PostMapping
+	@PreAuthorize("hasAuthority('ROLE_ADD_EMPLOYEE')")
 	public ResponseEntity<EmployeeAddResponse> addEmployee(@Valid @RequestBody EmployeeAddRequest request,
 			BindingResult br) {
 		if (br.hasErrors()) {
@@ -40,22 +42,26 @@ public class EmployeeController {
 	}
 
 	@GetMapping
+	@PreAuthorize("hasAuthority('ROLE_GET_EMPLOYEE')")
 	public EmployeeListResponse getAllEmployees() {
 		return service.getAll();
 	}
 
 	@GetMapping(path = "/{id}")
+	@PreAuthorize("hasAuthority('ROLE_GET_EMPLOYEE')")
 	public EmployeeSingleResponse findEmployeeById(@PathVariable Integer id) {
 		return service.findEmployeeById(id);
 	}
 
 	@DeleteMapping(path = "/{id}")
+	@PreAuthorize("hasAuthority('ROLE_DELETE_EMPLOYEE')")
 	public ResponseEntity<?> deleteEmployeeById(@PathVariable Integer id) {
 		service.deleteEmployeeById(id);
 		return ResponseEntity.noContent().build();
 	}
 
 	@PatchMapping
+	@PreAuthorize("hasAuthority('ROLE_PATCH_EMPLOYEE')")
 	public ResponseEntity<?> patchEmployee(@Valid @RequestBody EmployeeUpdateRequest request, BindingResult br) {
 		if (br.hasErrors()) {
 			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
@@ -65,6 +71,7 @@ public class EmployeeController {
 	}
 
 	@PatchMapping(path = "/{id}")
+	@PreAuthorize("hasAuthority('ROLE_REHIRE_EMPLOYEE')")
 	public ResponseEntity<?> rehireEmployee(@PathVariable Integer id) {
 
 		service.rehireEmployeeById(id);

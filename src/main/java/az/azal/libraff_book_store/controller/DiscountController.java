@@ -2,6 +2,7 @@ package az.azal.libraff_book_store.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ public class DiscountController {
 	private final DiscountService service;
 
 	@PostMapping
+	@PreAuthorize("hasAuthority('ROLE_ADD_DISCOUNT')")
 	public ResponseEntity<DiscountAddResponse> createDiscount(@Valid @RequestBody DiscountAddRequest request,
 			BindingResult br) {
 		if (br.hasErrors()) {

@@ -2,6 +2,7 @@ package az.azal.libraff_book_store.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ public class BookStockController {
 	private final BookStockService service;
 
 	@PostMapping(path = "/restock")
+	@PreAuthorize("hasAuthority('ROLE_RESTOCK_BOOK')")
 	public ResponseEntity<String> restockBook(@RequestBody TransactionRestockRequest request) {
 
 		service.restock(request.getRestockedBooks(), request.getStoreId(), request.getEmployeeId());
