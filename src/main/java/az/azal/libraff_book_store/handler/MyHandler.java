@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,5 +78,21 @@ public class MyHandler {
 		resp.setTimestamp(LocalDateTime.now());
 		return resp;
 
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<MyErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e,
+			HttpServletRequest request) {
+
+		// 1. A clean, global message that makes sense for ANY endpoint
+		String errorMessage = "Malformed JSON request. Please check your JSON syntax and ensure all fields match their expected data types (e.g., correct text, numbers, or specific Enum values).";
+
+		// 2. Print the exact, ugly Java error to your
+		System.err.println(
+				"JSON Parse Error on " + request.getRequestURI() + ": " + e.getMostSpecificCause().getMessage());
+
+		MyErrorResponse resp = createBaseResponse(request, "INVALID_JSON_FORMAT", errorMessage);
+
+		return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
 	}
 }
