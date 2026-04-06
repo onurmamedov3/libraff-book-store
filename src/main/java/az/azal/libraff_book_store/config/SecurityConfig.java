@@ -38,6 +38,7 @@ public class SecurityConfig {
 						.requestMatchers("/h2-console/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/apis/refresh-token").permitAll()
 						.requestMatchers(HttpMethod.GET, "/books").permitAll()
+						.requestMatchers("/", "/index.html", "/style.css", "/script.js").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
