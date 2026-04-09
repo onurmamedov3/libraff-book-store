@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.request.BookTransferAddRequest;
 import az.azal.libraff_book_store.request.BookTransferApproveRequest;
@@ -29,7 +30,7 @@ public class BookTransferController {
 	@PreAuthorize("hasAuthority('ROLE_REQUEST_TRANSFER')")
 	public ResponseEntity<?> requestTransfer(@Valid @RequestBody BookTransferAddRequest request, BindingResult br) {
 		if (br.hasErrors()) {
-			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.VALIDATION_ERROR, br);
 		}
 		service.requestTransfer(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body("Transfer requested successfully.");
@@ -40,7 +41,7 @@ public class BookTransferController {
 	public ResponseEntity<?> approveTransfer(@PathVariable Integer transferId,
 			@Valid @RequestBody BookTransferApproveRequest request, BindingResult br) {
 		if (br.hasErrors()) {
-			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.VALIDATION_ERROR, br);
 		}
 		service.processTransferApproval(transferId, request);
 		return ResponseEntity.ok("Transfer status updated to: " + request.getStatus());

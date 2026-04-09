@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.GradePositionEntity;
@@ -12,6 +11,7 @@ import az.azal.libraff_book_store.entity.GradeStoreEntity;
 import az.azal.libraff_book_store.entity.GradeStructureEntity;
 import az.azal.libraff_book_store.entity.PositionEntity;
 import az.azal.libraff_book_store.entity.StoreEntity;
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.enums.GradeTarget;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.repository.GradePositionRepository;
@@ -51,9 +51,8 @@ public class GradeStructureService {
 
 		if (grade.getTargetType() == GradeTarget.STORE && request.getAssignedStoreIds() != null) {
 			for (Integer storeId : request.getAssignedStoreIds()) {
-				StoreEntity store = storeRepository.findById(storeId)
-						.orElseThrow(() -> new MyException("Store ID " + storeId + " not found", "STORE_NOT_FOUND",
-								HttpStatus.NOT_FOUND));
+				StoreEntity store = storeRepository.findById(storeId).orElseThrow(
+						() -> new MyException("Store ID " + storeId + " not found", ErrorStatus.STORE_NOT_FOUND));
 
 				GradeStoreEntity gradeStore = new GradeStoreEntity();
 				gradeStore.setGradeStructure(grade);
@@ -66,7 +65,7 @@ public class GradeStructureService {
 			for (Integer positionId : request.getAssignedPositionIds()) {
 				PositionEntity position = positionRepository.findById(positionId)
 						.orElseThrow(() -> new MyException("Position ID " + positionId + " not found",
-								"POSITION_NOT_FOUND", HttpStatus.NOT_FOUND));
+								ErrorStatus.POSITION_NOT_FOUND));
 
 				GradePositionEntity gradePosition = new GradePositionEntity();
 				gradePosition.setGradeStructure(grade);

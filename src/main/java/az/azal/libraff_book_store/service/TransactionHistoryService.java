@@ -3,12 +3,12 @@ package az.azal.libraff_book_store.service;
 import java.time.LocalDate;
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.BookStockEntity;
 import az.azal.libraff_book_store.entity.EmployeeEntity;
 import az.azal.libraff_book_store.entity.TransactionHistoryEntity;
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.enums.TransactionType;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.repository.BookStockRepository;
@@ -33,11 +33,10 @@ public class TransactionHistoryService {
 	public void sellBook(Map<Integer, Integer> soldBooks, Integer storeId, Integer employeeId) {
 
 		EmployeeEntity employee = employeeRepository.findById(employeeId)
-				.orElseThrow(() -> new MyException("Employee not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
 
 		if (employee.getIsActive() != true) {
-			throw new MyException("Unemployed employees cannot perform this operation!", "UNAUTHORIZED_OPERATION",
-					HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.UNAUTHORIZED_OPERATION);
 		}
 
 		for (Map.Entry<Integer, Integer> entry : soldBooks.entrySet()) {
@@ -45,13 +44,13 @@ public class TransactionHistoryService {
 			Integer quantityToSell = entry.getValue();
 
 			// 1. Find Stock
-			BookStockEntity stock = bookStockRepository.findByBookIdAndStoreId(bookId, storeId).orElseThrow(
-					() -> new MyException("Book not found in this store!", "BOOK_NOT_FOUND", HttpStatus.NOT_FOUND));
+			BookStockEntity stock = bookStockRepository.findByBookIdAndStoreId(bookId, storeId)
+					.orElseThrow(() -> new MyException(ErrorStatus.BOOK_NOT_FOUND));
 
 			// 2. Check Stock
 			if (stock.getQuantity() < quantityToSell) {
-				throw new MyException("Not enough stock for: " + stock.getBook().getName(), "NOT_ENOUGH_ITEM",
-						HttpStatus.BAD_REQUEST);
+				throw new MyException("Not enough stock for: " + stock.getBook().getName(),
+						ErrorStatus.NOT_ENOUGH_STOCK);
 			}
 
 			Double finalDiscountedPrice = discountService.calculateDiscountedPrice(stock.getBook(), storeId);

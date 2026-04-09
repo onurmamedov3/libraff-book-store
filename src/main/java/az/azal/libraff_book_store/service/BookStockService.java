@@ -12,6 +12,7 @@ import az.azal.libraff_book_store.entity.BookStockEntity;
 import az.azal.libraff_book_store.entity.EmployeeEntity;
 import az.azal.libraff_book_store.entity.StoreEntity;
 import az.azal.libraff_book_store.entity.TransactionHistoryEntity;
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.enums.TransactionType;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.repository.BookRepository;
@@ -44,14 +45,13 @@ public class BookStockService {
 		}
 
 		EmployeeEntity employee = employeeRepository.findById(employeeId)
-				.orElseThrow(() -> new MyException("Employee not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
 
 		StoreEntity store = storeRepository.findById(storeId)
-				.orElseThrow(() -> new MyException("Store not found", "NOT_FOUND", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND));
 
 		if (employee.getIsActive() != true) {
-			throw new MyException("Unemployed employees cannot perform this operation!", "UNAUTHORIZED_OPERATION",
-					HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.UNAUTHORIZED_OPERATION);
 		}
 
 		for (Map.Entry<Integer, Integer> restockedBook : restockedBooks.entrySet()) {
@@ -67,9 +67,8 @@ public class BookStockService {
 				stock.setQuantity(stock.getQuantity() + quantityToRestock);
 			} else {
 
-				BookEntity book = bookRepository.findById(bookId)
-						.orElseThrow(() -> new MyException("Book not found in the master catalog!", "BOOK_NOT_FOUND",
-								HttpStatus.NOT_FOUND));
+				BookEntity book = bookRepository.findById(bookId).orElseThrow(
+						() -> new MyException("Book not found in the master catalog!", ErrorStatus.BOOK_NOT_FOUND));
 
 				stock = new BookStockEntity();
 				stock.setBook(book);

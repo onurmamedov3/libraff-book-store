@@ -8,12 +8,12 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.EmployeeEntity;
 import az.azal.libraff_book_store.entity.PositionEntity;
 import az.azal.libraff_book_store.entity.StoreEntity;
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.repository.EmployeeRepository;
 import az.azal.libraff_book_store.repository.PositionRepository;
@@ -50,26 +50,24 @@ public class EmployeeService {
 		// 1. Uniqueness Validations
 
 		if (repository.existsByFIN(request.getFIN())) {
-			throw new MyException("Employee with this FIN already exists!", "DUPLICATE_FIN", HttpStatus.CONFLICT);
+			throw new MyException(ErrorStatus.DUPLICATE_FIN);
 		}
 
 		if (repository.existsByEmail(request.getEmail())) {
-			throw new MyException("Employee with this Email already exists!", "DUPLICATE_EMAIL", HttpStatus.CONFLICT);
+			throw new MyException(ErrorStatus.DUPLICATE_EMAIL);
 		}
 
 		if (repository.existsByPhone(request.getPhone())) {
-			throw new MyException("Employee with this Phone number already exists!", "DUPLICATE_PHONE",
-					HttpStatus.CONFLICT);
+			throw new MyException(ErrorStatus.DUPLICATE_PHONE);
 		}
 
 		// 2. Fetch Position and Validate Business Rules
 
-		PositionEntity position = positionRepository.findById(request.getPositionId()).orElseThrow(
-				() -> new MyException("Position not found!", "POSITION_NOT_FOUND", HttpStatus.BAD_REQUEST));
+		PositionEntity position = positionRepository.findById(request.getPositionId())
+				.orElseThrow(() -> new MyException(ErrorStatus.POSITION_NOT_FOUND));
 
 		if (request.getSalary() < position.getMinSalary() || request.getSalary() > position.getMaxSalary()) {
-			throw new MyException("This salary is not valid for the current position!", "INVALID_SALARY",
-					HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.INVALID_SALARY);
 		}
 
 		// 3. Fetch Optional Store Relationship
@@ -78,7 +76,7 @@ public class EmployeeService {
 
 		if (request.getStoreId() != null) {
 			storeEntity = storeRepository.findById(request.getStoreId())
-					.orElseThrow(() -> new MyException("Store Not Found!", "STORE_NOT_FOUND", HttpStatus.NOT_FOUND));
+					.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND));
 		}
 
 		// 4. Check position count limits
@@ -136,7 +134,7 @@ public class EmployeeService {
 		if (optional.isPresent()) {
 			employee = optional.get();
 		} else {
-			throw new MyException("Employee not found!", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND);
+			throw new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND);
 		}
 
 		EmployeeSingleResponse response = new EmployeeSingleResponse();
@@ -149,10 +147,10 @@ public class EmployeeService {
 	public void deleteEmployeeById(Integer id) {
 
 		EmployeeEntity employee = repository.findById(id)
-				.orElseThrow(() -> new MyException("Employee not found!", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
 
 		if (!employee.getIsActive()) {
-			throw new MyException("Employee is already inactive!", "ALREADY_INACTIVE", HttpStatus.CONFLICT);
+			throw new MyException(ErrorStatus.ALREADY_INACTIVE);
 		}
 
 		employeeHistoryService.recordHistory(employee, false);
@@ -167,16 +165,15 @@ public class EmployeeService {
 	public void patchEmployee(EmployeeUpdateRequest updateRequest) {
 
 		EmployeeEntity employee = repository.findById(updateRequest.getId())
-				.orElseThrow(() -> new MyException("Employee not found", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
 
 		if (employee.getIsActive() != true) {
-			throw new MyException("Employee is inactive. Cannot perform the operation", "INACTIVE_EMPLOYEE",
-					HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.ALREADY_INACTIVE);
 		}
 
 		// 1. Check if the user is attempting to change the immutable FIN
 		if (updateRequest.getFIN() != null && !updateRequest.getFIN().equals(employee.getFIN())) {
-			throw new MyException("FIN is immutable and cannot be changed!", "IMMUTABLE_FIELD", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.IMMUTABLE_FIELD);
 		}
 
 		// We save the old values to track changes (for the history)
@@ -207,15 +204,14 @@ public class EmployeeService {
 		// request)
 		if (updateRequest.getPositionId() != null && !updateRequest.getPositionId().equals(oldPositionId)) {
 			PositionEntity newPosition = positionRepository.findById(updateRequest.getPositionId())
-					.orElseThrow(() -> new MyException("Position not found", "NOT_FOUND", HttpStatus.NOT_FOUND));
+					.orElseThrow(() -> new MyException(ErrorStatus.POSITION_NOT_FOUND));
 
 			Double salaryToCheck = (updateRequest.getSalary() != null) ? updateRequest.getSalary()
 					: employee.getSalary();
 
 			if (salaryToCheck != null) {
 				if (salaryToCheck < newPosition.getMinSalary() || salaryToCheck > newPosition.getMaxSalary()) {
-					throw new MyException("Salary is not valid for the new position range!", "INVALID_SALARY",
-							HttpStatus.BAD_REQUEST);
+					throw new MyException(ErrorStatus.INVALID_SALARY);
 
 				}
 			}
@@ -232,8 +228,7 @@ public class EmployeeService {
 			PositionEntity currentPos = employee.getPosition();
 			if (updateRequest.getSalary() < currentPos.getMinSalary()
 					|| updateRequest.getSalary() > currentPos.getMaxSalary()) {
-				throw new MyException("New salary out of range for current position", "INVALID_SALARY",
-						HttpStatus.BAD_REQUEST);
+				throw new MyException(ErrorStatus.INVALID_SALARY);
 			}
 			employee.setSalary(updateRequest.getSalary());
 			isHistoryChanged = true;
@@ -241,7 +236,7 @@ public class EmployeeService {
 
 		if (updateRequest.getStoreId() != null && !updateRequest.getStoreId().equals(oldStoreId)) {
 			StoreEntity newStore = storeRepository.findById(updateRequest.getStoreId())
-					.orElseThrow(() -> new MyException("Store not found", "NOT_FOUND", HttpStatus.NOT_FOUND));
+					.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND));
 			employee.setStore(newStore);
 		}
 
@@ -269,10 +264,10 @@ public class EmployeeService {
 	public void rehireEmployeeById(Integer id) {
 
 		EmployeeEntity employee = repository.findById(id)
-				.orElseThrow(() -> new MyException("Employee not found!", "EMPLOYEE_NOT_FOUND", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
 
 		if (employee.getIsActive()) {
-			throw new MyException("Employee is already active!", "ALREADY_ACTIVE", HttpStatus.CONFLICT);
+			throw new MyException(ErrorStatus.ALREADY_INACTIVE);
 		}
 
 		// Check if bringing this employee back exceeds the limit
@@ -298,9 +293,7 @@ public class EmployeeService {
 			int currentActiveCount = repository.countByStoreIdAndPositionIdAndIsActiveTrue(storeId, positionId);
 
 			if (currentActiveCount >= limit) {
-				throw new MyException(
-						"Cannot add employee. The limit for this position in the selected store has been reached.",
-						"POSITION_LIMIT_EXCEEDED", HttpStatus.BAD_REQUEST);
+				throw new MyException(ErrorStatus.POSITION_LIMIT_EXCEEDED);
 			}
 		}
 	}

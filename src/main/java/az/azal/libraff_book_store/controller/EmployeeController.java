@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.request.EmployeeAddRequest;
 import az.azal.libraff_book_store.request.EmployeeUpdateRequest;
@@ -35,7 +36,7 @@ public class EmployeeController {
 	public ResponseEntity<EmployeeAddResponse> addEmployee(@Valid @RequestBody EmployeeAddRequest request,
 			BindingResult br) {
 		if (br.hasErrors()) {
-			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.VALIDATION_ERROR, br);
 		}
 		EmployeeAddResponse response = service.add(request);
 		return new ResponseEntity<EmployeeAddResponse>(response, HttpStatus.CREATED);
@@ -64,7 +65,7 @@ public class EmployeeController {
 	@PreAuthorize("hasAuthority('ROLE_PATCH_EMPLOYEE')")
 	public ResponseEntity<?> patchEmployee(@Valid @RequestBody EmployeeUpdateRequest request, BindingResult br) {
 		if (br.hasErrors()) {
-			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.VALIDATION_ERROR, br);
 		}
 		service.patchEmployee(request);
 		return ResponseEntity.noContent().build();

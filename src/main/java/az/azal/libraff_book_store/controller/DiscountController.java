@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.request.DiscountAddRequest;
 import az.azal.libraff_book_store.response.DiscountAddResponse;
@@ -28,7 +29,7 @@ public class DiscountController {
 	public ResponseEntity<DiscountAddResponse> createDiscount(@Valid @RequestBody DiscountAddRequest request,
 			BindingResult br) {
 		if (br.hasErrors()) {
-			throw new MyException("Validation failed", br, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.VALIDATION_ERROR, br);
 		}
 		DiscountAddResponse response = service.createDiscount(request);
 		return new ResponseEntity<DiscountAddResponse>(response, HttpStatus.CREATED);

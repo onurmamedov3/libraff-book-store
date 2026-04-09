@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.AuthorEntity;
 import az.azal.libraff_book_store.entity.BookEntity;
 import az.azal.libraff_book_store.entity.DiscountEntity;
+import az.azal.libraff_book_store.enums.ErrorStatus;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.repository.AuthorRepository;
 import az.azal.libraff_book_store.repository.BookRepository;
@@ -43,8 +43,7 @@ public class DiscountService {
 
 		// Check if start date is after end date
 		if (request.getDiscountStartDate().isAfter(request.getDiscountEndDate())) {
-			throw new MyException("Start date cannot be after the end date!", "INVALID_DATE_RANGE",
-					HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.INVALID_DATE_RANGE);
 		}
 
 		validateDiscountTargets(request);
@@ -55,22 +54,22 @@ public class DiscountService {
 		// Check validations
 		if (request.getBookId() != null) {
 			discount.setBook(bookRepository.findById(request.getBookId())
-					.orElseThrow(() -> new MyException("Book Not Found!", "BOOK_NOT_FOUND", HttpStatus.NOT_FOUND)));
+					.orElseThrow(() -> new MyException(ErrorStatus.BOOK_NOT_FOUND)));
 		}
 
 		if (request.getAuthorId() != null) {
 			discount.setAuthor(authorRepository.findById(request.getAuthorId())
-					.orElseThrow(() -> new MyException("Author Not Found!", "AUTHOR_NOT_FOUND", HttpStatus.NOT_FOUND)));
+					.orElseThrow(() -> new MyException(ErrorStatus.AUTHOR_NOT_FOUND)));
 		}
 
 		if (request.getGenreId() != null) {
 			discount.setGenre(genreRepository.findById(request.getGenreId())
-					.orElseThrow(() -> new MyException("Genre Not Found!", "GENRE_NOT_FOUND", HttpStatus.NOT_FOUND)));
+					.orElseThrow(() -> new MyException(ErrorStatus.GENRE_NOT_FOUND)));
 		}
 
 		if (request.getStoreId() != null) {
 			discount.setStore(storeRepository.findById(request.getStoreId())
-					.orElseThrow(() -> new MyException("Store Not Found!", "STORE_NOT_FOUND", HttpStatus.NOT_FOUND)));
+					.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND)));
 		}
 
 		discount.setIsActive(true);
@@ -122,12 +121,11 @@ public class DiscountService {
 			targetCount++;
 
 		if (targetCount > 1) {
-			throw new MyException("You can only select one target (Book, Author, or Genre) at a time!",
-					"MULTIPLE_TARGETS", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.MULTIPLE_TARGETS);
 		}
 
 		if (targetCount == 0 && request.getStoreId() == null) {
-			throw new MyException("No target has been chosen!", "NO_TARGET_SELECTED", HttpStatus.BAD_REQUEST);
+			throw new MyException(ErrorStatus.NO_TARGET_SELECTED);
 		}
 
 	}
