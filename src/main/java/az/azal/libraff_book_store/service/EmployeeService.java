@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.EmployeeEntity;
@@ -25,24 +25,23 @@ import az.azal.libraff_book_store.response.EmployeeListResponse;
 import az.azal.libraff_book_store.response.EmployeeSingleResponse;
 import az.azal.libraff_book_store.util.PositionConstants;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class EmployeeService {
 
-	@Autowired
-	private EmployeeRepository repository;
+	private final EmployeeRepository repository;
 
-	@Autowired
-	private StoreRepository storeRepository;
+	private final StoreRepository storeRepository;
 
-	@Autowired
-	private PositionRepository positionRepository;
+	private final PositionRepository positionRepository;
 
-	@Autowired
-	private ModelMapper mapper;
+	private final ModelMapper mapper;
 
-	@Autowired
-	private EmployeeWorkHistoryService employeeHistoryService;
+	private final EmployeeWorkHistoryService employeeHistoryService;
+
+	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
 	public EmployeeAddResponse add(EmployeeAddRequest request) {
@@ -87,6 +86,7 @@ public class EmployeeService {
 
 		EmployeeEntity employee = new EmployeeEntity();
 		mapper.map(request, employee);
+		employee.setPassword(passwordEncoder.encode(request.getPassword()));
 		employee.setStore(storeEntity);
 		employee.setPosition(position);
 

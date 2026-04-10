@@ -76,14 +76,14 @@ INSERT INTO employees (FIN, name, surname, password, is_active, email, phone, sa
 -- Cashier (Rafiq - Employee ID 1)
 -- Best Practice: Cashiers only handle point-of-sale operations.
 -- ==========================================
-INSERT INTO employee_roles (employee_id, role_id) VALUES 
+INSERT INTO position_roles (position_id, role_id) VALUES 
 (1, 1); -- ROLE_SELL_BOOK
 
 -- ==========================================
 -- Sales Representative (Nərmin - Employee ID 2)
 -- Best Practice: Can sell books and request items from other branches for customers.
 -- ==========================================
-INSERT INTO employee_roles (employee_id, role_id) VALUES 
+INSERT INTO position_roles (position_id, role_id) VALUES 
 (2, 1), -- ROLE_SELL_BOOK
 (2, 4); -- ROLE_REQUEST_TRANSFER
 
@@ -91,7 +91,7 @@ INSERT INTO employee_roles (employee_id, role_id) VALUES
 -- Chief Sales Rep / Floor Supervisor (Əhməd - Employee ID 3)
 -- Best Practice: Handles sales, transfers, receiving warehouse inventory, and applying daily discounts.
 -- ==========================================
-INSERT INTO employee_roles (employee_id, role_id) VALUES 
+INSERT INTO position_roles (position_id, role_id) VALUES 
 (3, 1), -- ROLE_SELL_BOOK
 (3, 3), -- ROLE_RESTOCK_BOOK
 (3, 4), -- ROLE_REQUEST_TRANSFER
@@ -101,7 +101,7 @@ INSERT INTO employee_roles (employee_id, role_id) VALUES
 -- Store Manager (Huseyn - Employee ID 4)
 -- Best Practice: Full administrative access. Approves transfers, manages catalog, HR duties, and payroll rules.
 -- ==========================================
-INSERT INTO employee_roles (employee_id, role_id) VALUES 
+INSERT INTO position_roles (position_id, role_id) VALUES 
 (4, 1), -- ROLE_SELL_BOOK
 (4, 2), -- ROLE_ADD_BOOK
 (4, 3), -- ROLE_RESTOCK_BOOK
