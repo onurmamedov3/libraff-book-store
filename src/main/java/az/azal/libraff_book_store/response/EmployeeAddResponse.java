@@ -10,19 +10,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeAddResponse {
-	
+
 	private Integer id;
-	
+
 	private String name;
-	
+
 	private Boolean isActive;
-	
+
 	private String email;
-	
+
 	private LocalDate dateEmployed;
-	
+
 	private String storeName;
-	
-	// storeName and role may be added later...
-	
+
 }
