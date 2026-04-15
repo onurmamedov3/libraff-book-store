@@ -1,10 +1,12 @@
 package az.azal.libraff_book_store.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
@@ -35,6 +37,7 @@ import az.azal.libraff_book_store.repository.EmployeeRepository;
 import az.azal.libraff_book_store.repository.PositionRepository;
 import az.azal.libraff_book_store.repository.StoreRepository;
 import az.azal.libraff_book_store.request.EmployeeAddRequest;
+import az.azal.libraff_book_store.request.EmployeeUpdateRequest;
 import az.azal.libraff_book_store.response.EmployeeAddResponse;
 import az.azal.libraff_book_store.response.EmployeeListResponse;
 import az.azal.libraff_book_store.response.EmployeeSingleResponse;
@@ -76,7 +79,7 @@ class EmployeeServiceTest {
 		addRequest.setSurname("Mamedov");
 		addRequest.setFIN("AZ12345");
 		addRequest.setEmail("aslan.123@gmail.com");
-		addRequest.setDateEmployed(LocalDate.of(2026, 02, 16));
+		addRequest.setDateEmployed(LocalDate.of(2026, 2, 16));
 
 		addRequest.setPositionId(1);
 		addRequest.setStoreId(1);
@@ -442,6 +445,241 @@ class EmployeeServiceTest {
 
 		assertEquals(ErrorStatus.POSITION_LIMIT_EXCEEDED.getMessage(), exception.getMessage());
 		verify(repository, never()).save(any());
+
+	}
+
+	// ═══════════════════════════════════════════════════════════════════════════
+	// patchEmployee()
+	// ═══════════════════════════════════════════════════════════════════════════
+
+	@Test
+	void patchEmployee_Success_WhenAllDataIsValid() {
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setName("Razil");
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setName("Aslan");
+		employee.setIsActive(true);
+		employee.setStore(fakeStore);
+		employee.setPosition(fakePosition);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+
+		assertDoesNotThrow(() -> employeeService.patchEmployee(updateRequest));
+
+		verify(repository, times(1)).save(any(EmployeeEntity.class));
+
+	}
+
+	@Test
+	void patchEmployee_ShouldThrow_WhenEmployeeNotFound() {
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+
+		when(repository.findById(1)).thenReturn(Optional.empty());
+
+		MyException exception = assertThrows(MyException.class, () -> employeeService.patchEmployee(updateRequest));
+
+		assertEquals(ErrorStatus.EMPLOYEE_NOT_FOUND.getMessage(), exception.getMessage());
+
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	void patchEmployee_ShouldThrow_WhenEmployeeIsInactive() {
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setName("Zeynalabdin");
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setName("Firudin");
+		employee.setIsActive(false);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+
+		MyException exception = assertThrows(MyException.class, () -> employeeService.patchEmployee(updateRequest));
+
+		assertEquals(ErrorStatus.EMPLOYEE_INACTIVE.getMessage(), exception.getMessage());
+
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	void patchEmployee_ShouldThrow_WhenFINIsChanged() {
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setFIN("AZ88888");
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setFIN("AZ00000");
+		employee.setIsActive(true);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+
+		MyException exception = assertThrows(MyException.class, () -> employeeService.patchEmployee(updateRequest));
+
+		assertEquals(ErrorStatus.IMMUTABLE_FIELD.getMessage(), exception.getMessage());
+
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	void patchEmployee_ShouldThrow_WhenNewSalaryBelowPositionMinimum() {
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setSalary(100.0);
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setSalary(4500.0);
+		employee.setStore(fakeStore);
+		employee.setPosition(fakePosition);
+		employee.setIsActive(true);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+
+		MyException exception = assertThrows(MyException.class, () -> employeeService.patchEmployee(updateRequest));
+
+		assertEquals(ErrorStatus.INVALID_SALARY.getMessage(), exception.getMessage());
+
+		verify(repository, never()).save(any());
+
+	}
+
+	@Test
+	void patchEmployee_ShouldThrow_WhenNewSalaryAbovePositionMaximum() {
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setSalary(10000.0);
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		// employee.setSalary(4500.0);
+		employee.setStore(fakeStore);
+		employee.setPosition(fakePosition);
+		employee.setIsActive(true);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+
+		MyException exception = assertThrows(MyException.class, () -> employeeService.patchEmployee(updateRequest));
+
+		assertEquals(ErrorStatus.INVALID_SALARY.getMessage(), exception.getMessage());
+
+		verify(repository, never()).save(any());
+
+	}
+
+	@Test
+	void patchEmployee_ShouldThrow_WhenNewPositionSalaryIsInvalid() {
+
+		PositionEntity position = new PositionEntity();
+		position.setId(2);
+		position.setMinSalary(950.0);
+		position.setMaxSalary(6500.0);
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setPositionId(2);
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setSalary(114500.0);
+		employee.setStore(fakeStore);
+		employee.setPosition(fakePosition);
+		employee.setIsActive(true);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+		when(repository.countByStoreIdAndPositionIdAndIsActiveTrue(1, 2)).thenReturn(0);
+		when(positionRepository.findById(2)).thenReturn(Optional.of(position));
+
+		MyException exception = assertThrows(MyException.class, () -> employeeService.patchEmployee(updateRequest));
+
+		assertEquals(ErrorStatus.INVALID_SALARY.getMessage(), exception.getMessage());
+
+		verify(repository, never()).save(any());
+
+	}
+
+	@Test
+	void patchEmployee_ShouldThrow_WhenPositionLimitExceededAfterMove() {
+
+		PositionEntity position = new PositionEntity();
+		position.setId(2);
+		position.setMinSalary(950.0);
+		position.setMaxSalary(6500.0);
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setPositionId(2);
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setSalary(4500.0);
+		employee.setStore(fakeStore);
+		employee.setPosition(fakePosition);
+		employee.setIsActive(true);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+		when(repository.countByStoreIdAndPositionIdAndIsActiveTrue(1, 2)).thenReturn(55);
+
+		MyException exception = assertThrows(MyException.class, () -> employeeService.patchEmployee(updateRequest));
+
+		assertEquals(ErrorStatus.POSITION_LIMIT_EXCEEDED.getMessage(), exception.getMessage());
+
+		verify(repository, never()).save(any());
+
+	}
+
+	@Test
+	void patchEmployee_ShouldRecordHistory_WhenSalaryChanges() {
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setSalary(3000.0);
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setSalary(2500.0);
+		employee.setStore(fakeStore);
+		employee.setPosition(fakePosition);
+		employee.setIsActive(true);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+
+		employeeService.patchEmployee(updateRequest);
+
+		verify(employeeHistoryService, times(1)).recordHistory(any(EmployeeEntity.class), anyBoolean());
+
+	}
+
+	@Test
+	void patchEmployee_ShouldNotRecordHistory_WhenNothingChanges() {
+
+		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
+		updateRequest.setId(1);
+		updateRequest.setName("Mirtohid");
+		;
+
+		EmployeeEntity employee = new EmployeeEntity();
+		employee.setId(1);
+		employee.setSalary(2500.0);
+		employee.setStore(fakeStore);
+		employee.setPosition(fakePosition);
+		employee.setIsActive(true);
+
+		when(repository.findById(1)).thenReturn(Optional.of(employee));
+
+		employeeService.patchEmployee(updateRequest);
+
+		verify(employeeHistoryService, never()).recordHistory(any(EmployeeEntity.class), anyBoolean());
 
 	}
 

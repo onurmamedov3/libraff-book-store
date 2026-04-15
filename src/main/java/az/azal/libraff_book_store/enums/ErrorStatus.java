@@ -33,6 +33,8 @@ public enum ErrorStatus {
 
 	ALREADY_INACTIVE("Employee is already inactive!", "ALREADY_INACTIVE", HttpStatus.CONFLICT),
 
+	EMPLOYEE_INACTIVE("Employee is inactive!", "EMPLOYEE_INACTIVE", HttpStatus.CONFLICT),
+
 	POSITION_LIMIT_EXCEEDED("Cannot add employee. The limit for this position in the selected store has been reached.",
 			"POSITION_LIMIT_EXCEEDED", HttpStatus.BAD_REQUEST),
 

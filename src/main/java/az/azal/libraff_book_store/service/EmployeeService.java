@@ -168,7 +168,7 @@ public class EmployeeService {
 				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
 
 		if (employee.getIsActive() != true) {
-			throw new MyException(ErrorStatus.ALREADY_INACTIVE);
+			throw new MyException(ErrorStatus.EMPLOYEE_INACTIVE);
 		}
 
 		// 1. Check if the user is attempting to change the immutable FIN
