@@ -73,7 +73,7 @@ class EmployeeServiceTest {
 	private EmployeeService employeeService;
 
 	@BeforeEach
-	void addEmployee() {
+	void setUp() {
 		addRequest = new EmployeeAddRequest();
 		addRequest.setName("Aslan");
 		addRequest.setSurname("Mamedov");
@@ -166,7 +166,7 @@ class EmployeeServiceTest {
 	}
 
 	@Test
-	void getAllBooks_ReturnsEmptyList_WhenNoEmployeesExist() {
+	void getAllEmployees_ShouldReturnEmptyList_WhenNoEmployeesExist() {
 
 		when(repository.findAll()).thenReturn(Collections.emptyList());
 
@@ -243,6 +243,7 @@ class EmployeeServiceTest {
 
 	@Test
 	void addEmployee_ShouldThrow_WhenEmailAlreadyExists() {
+		when(repository.existsByFIN(addRequest.getFIN())).thenReturn(false);
 		when(repository.existsByEmail(addRequest.getEmail())).thenReturn(true);
 
 		MyException exception = assertThrows(MyException.class, () -> employeeService.add(addRequest));
@@ -256,6 +257,8 @@ class EmployeeServiceTest {
 
 	@Test
 	void addEmployee_ShouldThrow_WhenPhoneAlreadyExists() {
+		when(repository.existsByFIN(addRequest.getFIN())).thenReturn(false);
+		when(repository.existsByEmail(addRequest.getEmail())).thenReturn(false);
 		when(repository.existsByPhone(addRequest.getPhone())).thenReturn(true);
 
 		MyException exception = assertThrows(MyException.class, () -> employeeService.add(addRequest));
@@ -268,7 +271,7 @@ class EmployeeServiceTest {
 	}
 
 	@Test
-	void addEmployee_ThrowsPositionNotFound() {
+	void addEmployee_ShouldThrow_WhenPositionNotFound() {
 
 		checkDuplicates();
 
@@ -295,7 +298,7 @@ class EmployeeServiceTest {
 	}
 
 	@Test
-	void addEmployee_WhenSalaryBelowMinimum() {
+	void addEmployee_ShouldThrow_WhenSalaryBelowMinimum() {
 		addRequest.setSalary(100.0);
 
 		checkDuplicates();
@@ -353,6 +356,7 @@ class EmployeeServiceTest {
 		employeeService.deleteEmployeeById(employee.getId());
 
 		assertFalse(employee.getIsActive());
+		assertNotNull(employee.getDateUnemployed());
 		verify(repository, times(1)).save(employee);
 		verify(employeeHistoryService, times(1)).recordHistory(employee, false);
 
@@ -402,7 +406,7 @@ class EmployeeServiceTest {
 
 		assertEquals(true, employee.getIsActive());
 		verify(repository, times(1)).save(any());
-
+		verify(employeeHistoryService, times(1)).recordHistory(employee, true);
 	}
 
 	@Test
@@ -468,6 +472,7 @@ class EmployeeServiceTest {
 		when(repository.findById(1)).thenReturn(Optional.of(employee));
 
 		assertDoesNotThrow(() -> employeeService.patchEmployee(updateRequest));
+		assertEquals("Razil", employee.getName());
 
 		verify(repository, times(1)).save(any(EmployeeEntity.class));
 
@@ -562,7 +567,7 @@ class EmployeeServiceTest {
 
 		EmployeeEntity employee = new EmployeeEntity();
 		employee.setId(1);
-		// employee.setSalary(4500.0);
+		employee.setSalary(4500.0);
 		employee.setStore(fakeStore);
 		employee.setPosition(fakePosition);
 		employee.setIsActive(true);
@@ -666,7 +671,6 @@ class EmployeeServiceTest {
 		EmployeeUpdateRequest updateRequest = new EmployeeUpdateRequest();
 		updateRequest.setId(1);
 		updateRequest.setName("Mirtohid");
-		;
 
 		EmployeeEntity employee = new EmployeeEntity();
 		employee.setId(1);
