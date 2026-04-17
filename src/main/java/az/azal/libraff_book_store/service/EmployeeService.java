@@ -26,7 +26,9 @@ import az.azal.libraff_book_store.response.EmployeeSingleResponse;
 import az.azal.libraff_book_store.util.PositionConstants;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeService {
@@ -46,26 +48,36 @@ public class EmployeeService {
 	@Transactional
 	public EmployeeAddResponse add(EmployeeAddRequest request) {
 
+		log.info("Adding new employee with FIN: {}", request.getFIN());
+
 		// 1. Uniqueness Validations
 
 		if (repository.existsByFIN(request.getFIN())) {
+			log.warn("Duplicate FIN rejected: {}", request.getFIN());
 			throw new MyException(ErrorStatus.DUPLICATE_FIN);
 		}
 
 		if (repository.existsByEmail(request.getEmail())) {
+			log.warn("Duplicate Email rejected: {}", request.getEmail());
 			throw new MyException(ErrorStatus.DUPLICATE_EMAIL);
 		}
 
 		if (repository.existsByPhone(request.getPhone())) {
+			log.warn("Duplicate Phone rejected: {}", request.getPhone());
 			throw new MyException(ErrorStatus.DUPLICATE_PHONE);
 		}
 
 		// 2. Fetch Position and Validate Business Rules
+		log.debug("Fetching position with id: {}", request.getPositionId());
 
-		PositionEntity position = positionRepository.findById(request.getPositionId())
-				.orElseThrow(() -> new MyException(ErrorStatus.POSITION_NOT_FOUND));
+		PositionEntity position = positionRepository.findById(request.getPositionId()).orElseThrow(() -> {
+			log.warn("Position not found with id: {}", request.getPositionId());
+			return new MyException(ErrorStatus.POSITION_NOT_FOUND);
+		});
 
 		if (request.getSalary() < position.getMinSalary() || request.getSalary() > position.getMaxSalary()) {
+			log.warn("Invalid salary {} for position '{}' (allowed: {}-{})", request.getSalary(), position.getId(),
+					position.getMinSalary(), position.getMaxSalary());
 			throw new MyException(ErrorStatus.INVALID_SALARY);
 		}
 
@@ -74,8 +86,11 @@ public class EmployeeService {
 		StoreEntity storeEntity = null;
 
 		if (request.getStoreId() != null) {
-			storeEntity = storeRepository.findById(request.getStoreId())
-					.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND));
+			log.debug("Fetching store with id: {}", request.getStoreId());
+			storeEntity = storeRepository.findById(request.getStoreId()).orElseThrow(() -> {
+				log.warn("Store not found with id: {}", request.getStoreId());
+				return new MyException(ErrorStatus.STORE_NOT_FOUND);
+			});
 		}
 
 		// 4. Check position count limits
@@ -93,6 +108,7 @@ public class EmployeeService {
 		// 6. Save to Database
 
 		repository.save(employee);
+		log.debug("Employee entity saved with id: {}", employee.getId());
 
 		// 7. Record employee history
 
@@ -107,12 +123,20 @@ public class EmployeeService {
 		}
 
 		mapper.map(employee, response);
+
+		log.info("Employee successfully added with id: {} and FIN: {}", employee.getId(), employee.getFIN());
+
 		return response;
 	}
 
 	public EmployeeListResponse getAll() {
 
+		log.info("Fetching all employees");
+
 		List<EmployeeEntity> employees = repository.findAll();
+
+		log.debug("Total employees fetched from DB: {}", employees.size());
+
 		List<EmployeeSingleResponse> responseList = new ArrayList<EmployeeSingleResponse>();
 
 		for (EmployeeEntity employee : employees) {
@@ -123,10 +147,15 @@ public class EmployeeService {
 
 		EmployeeListResponse listResponse = new EmployeeListResponse();
 		listResponse.setEmployees(responseList);
+
+		log.info("Returning {} employees", responseList.size());
+
 		return listResponse;
 	}
 
 	public EmployeeSingleResponse findEmployeeById(Integer id) {
+
+		log.info("Finding employee with id: {}", id);
 
 		Optional<EmployeeEntity> optional = repository.findById(id);
 		EmployeeEntity employee = null;
@@ -139,6 +168,9 @@ public class EmployeeService {
 
 		EmployeeSingleResponse response = new EmployeeSingleResponse();
 		mapper.map(employee, response);
+
+		log.debug("Employee found: id={}, FIN={}", employee.getId(), employee.getFIN());
+
 		return response;
 
 	}
@@ -146,10 +178,15 @@ public class EmployeeService {
 	@Transactional
 	public void deleteEmployeeById(Integer id) {
 
-		EmployeeEntity employee = repository.findById(id)
-				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
+		log.info("Firing employee with id: {}", id);
+
+		EmployeeEntity employee = repository.findById(id).orElseThrow(() -> {
+			log.warn("Cannot fire — employee not found with id: {}", id);
+			return new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND);
+		});
 
 		if (!employee.getIsActive()) {
+			log.warn("Cannot fire — employee id: {} is already inactive", id);
 			throw new MyException(ErrorStatus.ALREADY_INACTIVE);
 		}
 
@@ -159,20 +196,28 @@ public class EmployeeService {
 		employee.setDateUnemployed(LocalDate.now());
 		repository.save(employee);
 
+		log.info("Employee successfully fired with id: {}", employee.getId());
+
 	}
 
 	@Transactional
 	public void patchEmployee(EmployeeUpdateRequest updateRequest) {
 
-		EmployeeEntity employee = repository.findById(updateRequest.getId())
-				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
+		log.info("Patching employee with id: {}", updateRequest.getId());
+
+		EmployeeEntity employee = repository.findById(updateRequest.getId()).orElseThrow(() -> {
+			log.warn("Cannot patch — employee not found with id: {}", updateRequest.getId());
+			return new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND);
+		});
 
 		if (employee.getIsActive() != true) {
+			log.warn("Cannot patch — employee id: {} is inactive", updateRequest.getId());
 			throw new MyException(ErrorStatus.EMPLOYEE_INACTIVE);
 		}
 
 		// 1. Check if the user is attempting to change the immutable FIN
 		if (updateRequest.getFIN() != null && !updateRequest.getFIN().equals(employee.getFIN())) {
+			log.warn("Attempt to change immutable FIN for employee id: {}", employee.getId());
 			throw new MyException(ErrorStatus.IMMUTABLE_FIELD);
 		}
 
@@ -188,6 +233,7 @@ public class EmployeeService {
 		// Only check limits if the employee is moving to a NEW store or getting a
 		// NEW position
 		if (!newStoreId.equals(oldStoreId) || !newPositionId.equals(oldPositionId)) {
+			log.debug("Store or position changed for employee id: {} — checking position limits", employee.getId());
 			checkPositionLimit(newStoreId, newPositionId);
 		}
 
@@ -203,14 +249,24 @@ public class EmployeeService {
 		// 3. Manually update the related tables (Position, Store) (if sent in the
 		// request)
 		if (updateRequest.getPositionId() != null && !updateRequest.getPositionId().equals(oldPositionId)) {
-			PositionEntity newPosition = positionRepository.findById(updateRequest.getPositionId())
-					.orElseThrow(() -> new MyException(ErrorStatus.POSITION_NOT_FOUND));
+
+			log.debug("Position change detected for employee id: {} ({} → {})", employee.getId(), oldPositionId,
+					updateRequest.getPositionId());
+
+			PositionEntity newPosition = positionRepository.findById(updateRequest.getPositionId()).orElseThrow(() -> {
+				log.warn("New position not found with id: {}", updateRequest.getPositionId());
+				return new MyException(ErrorStatus.POSITION_NOT_FOUND);
+			});
 
 			Double salaryToCheck = (updateRequest.getSalary() != null) ? updateRequest.getSalary()
 					: employee.getSalary();
 
 			if (salaryToCheck != null) {
 				if (salaryToCheck < newPosition.getMinSalary() || salaryToCheck > newPosition.getMaxSalary()) {
+
+					log.warn("Salary {} out of range for new position '{}' (allowed: {}-{})", salaryToCheck,
+							newPosition.getId(), newPosition.getMinSalary(), newPosition.getMaxSalary());
+
 					throw new MyException(ErrorStatus.INVALID_SALARY);
 
 				}
@@ -224,10 +280,15 @@ public class EmployeeService {
 		// If the position has NOT CHANGED, but only the salary has CHANGED (separate
 		// verification)
 		if (updateRequest.getSalary() != null && !updateRequest.getSalary().equals(oldSalary)) {
+
+			log.debug("Salary change detected for employee id: {} ({} → {})", employee.getId(), oldSalary,
+					updateRequest.getSalary());
 			// Check the limits of the current task
 			PositionEntity currentPos = employee.getPosition();
 			if (updateRequest.getSalary() < currentPos.getMinSalary()
 					|| updateRequest.getSalary() > currentPos.getMaxSalary()) {
+				log.warn("Salary {} exceeds position limits for employee id: {}", updateRequest.getSalary(),
+						employee.getId());
 				throw new MyException(ErrorStatus.INVALID_SALARY);
 			}
 			employee.setSalary(updateRequest.getSalary());
@@ -235,8 +296,15 @@ public class EmployeeService {
 		}
 
 		if (updateRequest.getStoreId() != null && !updateRequest.getStoreId().equals(oldStoreId)) {
-			StoreEntity newStore = storeRepository.findById(updateRequest.getStoreId())
-					.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND));
+
+			log.debug("Store change detected for employee id: {} ({} → {})", employee.getId(), oldStoreId,
+					updateRequest.getStoreId());
+
+			StoreEntity newStore = storeRepository.findById(updateRequest.getStoreId()).orElseThrow(() -> {
+				log.warn("New store not found with id: {}", updateRequest.getStoreId());
+				return new MyException(ErrorStatus.STORE_NOT_FOUND);
+			});
+
 			employee.setStore(newStore);
 		}
 
@@ -256,22 +324,31 @@ public class EmployeeService {
 			isHistoryChanged = true;
 
 		if (isHistoryChanged) {
+			log.debug("History-worthy changes detected — recording history for employee id: {}", employee.getId());
 			employeeHistoryService.recordHistory(employee, employee.getIsActive());
 		}
+
+		log.info("Employee id: {} successfully patched", employee.getId());
 	}
 
 	@Transactional
 	public void rehireEmployeeById(Integer id) {
 
-		EmployeeEntity employee = repository.findById(id)
-				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
+		log.info("Rehiring employee with id: {}", id);
+
+		EmployeeEntity employee = repository.findById(id).orElseThrow(() -> {
+			log.warn("Cannot rehire — employee not found with id: {}", id);
+			return new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND);
+		});
 
 		if (employee.getIsActive()) {
+			log.warn("Rehire rejected — employee id: {} is already active", id);
 			throw new MyException(ErrorStatus.ALREADY_INACTIVE);
 		}
 
 		// Check if bringing this employee back exceeds the limit
 		if (employee.getStore() != null && employee.getPosition() != null) {
+			log.debug("Checking position limits before rehiring employee id: {}", id);
 			checkPositionLimit(employee.getStore().getId(), employee.getPosition().getId());
 		}
 
@@ -281,18 +358,27 @@ public class EmployeeService {
 		employee.setDateUnemployed(null);
 
 		repository.save(employee);
+
+		log.info("Employee rehired successfully with id: {}", employee.getId());
 	}
 
 	private void checkPositionLimit(Integer storeId, Integer positionId) {
-		if (storeId == null || positionId == null)
+		if (storeId == null || positionId == null) {
+			log.debug("checkPositionLimit skipped — storeId or positionId is null");
 			return;
-
+		}
 		Integer limit = PositionConstants.LIMITS.get(positionId);
 
 		if (limit != null) {
 			int currentActiveCount = repository.countByStoreIdAndPositionIdAndIsActiveTrue(storeId, positionId);
 
+			log.debug("Position id: {} in store id: {} — active: {}/{}", positionId, storeId, currentActiveCount,
+					limit);
+
 			if (currentActiveCount >= limit) {
+
+				log.warn("Position limit reached — positionId: {}, storeId: {}, limit: {}", positionId, storeId, limit);
+
 				throw new MyException(ErrorStatus.POSITION_LIMIT_EXCEEDED);
 			}
 		}

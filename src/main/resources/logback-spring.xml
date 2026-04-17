@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <conversionRule conversionWord="clr"
+                    converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+
+    <!-- ─── Your custom logs — vivid and bright ─────────────────────── -->
+    <appender name="CUSTOM_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr(%d{HH:mm:ss}){faint} %clr(%-5level) %clr([%X{traceId:-SYSTEM}]){faint} %clr([LIBRAFF-APP]){magenta} %clr(%logger{36}){cyan} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ─── Spring built-in logs — faint and subtle ──────────────────── -->
+    <appender name="SPRING_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr(%d{HH:mm:ss}){faint} %clr(%-5level) %clr([%X{traceId:-SYSTEM}]){faint} %clr([SPRING]){faint} %clr(%logger{36}){faint} - %clr(%msg){faint}%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ─── YOUR package → bright ────────────────────────────────────── -->
+    <logger name="az.azal" level="DEBUG" additivity="false">
+        <appender-ref ref="CUSTOM_CONSOLE"/>
+    </logger>
+
+    <!-- ─── Everything else → faint ─────────────────────────────────── -->
+    <root level="INFO">
+        <appender-ref ref="SPRING_CONSOLE"/>
+    </root>
+
+</configuration>

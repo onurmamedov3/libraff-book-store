@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.AuthorEntity;
@@ -21,28 +20,31 @@ import az.azal.libraff_book_store.request.BookAddRequest;
 import az.azal.libraff_book_store.response.BookAddResponse;
 import az.azal.libraff_book_store.response.BookListResponse;
 import az.azal.libraff_book_store.response.BookSingleResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class BookService {
 
-	@Autowired
-	private BookRepository repository; // @RequiredArgsConstructor
+	private final BookRepository repository;
 
-	@Autowired
-	private StoreRepository storeRepository;
+	private final StoreRepository storeRepository;
 
-	@Autowired
-	private GenreRepository genreRepository;
+	private final GenreRepository genreRepository;
 
-	@Autowired
-	private AuthorRepository authorRepository;
+	private final AuthorRepository authorRepository;
 
-	@Autowired
-	private ModelMapper mapper;
+	private final ModelMapper mapper;
 
 	public BookListResponse getAllBooks() {
 
+		log.info("Fetching books from the database");
+
 		List<BookEntity> books = repository.findAll();
+
+		log.debug("Books fetched from the database: {}", books.size());
 		List<BookSingleResponse> responseList = new ArrayList<BookSingleResponse>();
 
 		for (BookEntity book : books) {
@@ -53,23 +55,35 @@ public class BookService {
 
 		BookListResponse listResponse = new BookListResponse();
 		listResponse.setBooks(responseList);
+		log.info("Successfully fetched the books from database");
+
 		return listResponse;
 	}
 
 	public BookAddResponse addBook(BookAddRequest request) {
 
+		log.info("Adding a new Book: {}", request.getName());
+
 		BookEntity book = new BookEntity();
 		mapper.map(request, book);
 
-		StoreEntity store = storeRepository.findById(request.getStoreId())
-				.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND));
+		StoreEntity store = storeRepository.findById(request.getStoreId()).orElseThrow(() -> {
+			log.warn("Store not found with id: {}", request.getStoreId());
+			return new MyException(ErrorStatus.STORE_NOT_FOUND);
+		});
 
-		GenreEntity genre = genreRepository.findById(request.getGenreId())
-				.orElseThrow(() -> new MyException(ErrorStatus.GENRE_NOT_FOUND));
+		GenreEntity genre = genreRepository.findById(request.getGenreId()).orElseThrow(() -> {
+			log.warn("Genre not found with id: {}", request.getGenreId());
+			return new MyException(ErrorStatus.GENRE_NOT_FOUND);
+		}
+
+		);
 
 		List<AuthorEntity> authors = authorRepository.findAllById(request.getAuthorIds());
 
 		if (authors.size() != request.getAuthorIds().size()) {
+			log.warn("One or more authors not found! Expected author size: {}. Actual auhtor size: {}", authors.size(),
+					request.getAuthorIds().size());
 			throw new MyException(ErrorStatus.AUTHOR_NOT_FOUND);
 		}
 
@@ -82,6 +96,8 @@ public class BookService {
 		BookAddResponse response = new BookAddResponse();
 		response.setId(book.getId());
 		response.setName(book.getName());
+
+		log.debug("Book saved with id: {}", book.getId());
 
 		return response;
 	}
