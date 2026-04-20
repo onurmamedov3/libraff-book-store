@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -93,6 +94,18 @@ public class MyHandler {
 				"An unexpected error occurred on the server.", HttpStatus.INTERNAL_SERVER_ERROR);
 
 		return new ResponseEntity<>(resp, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+
+	@ExceptionHandler(RequestNotPermitted.class)
+	public ResponseEntity<MyErrorResponse> handleRequestNotPermitted(RequestNotPermitted e, HttpServletRequest request) {
+
+		log.error("Too many requests {}", request.getRequestURI(), e);
+
+		MyErrorResponse resp = createBaseResponse(request, "TOO_MANY_REQUESTS",
+				"RateLimiter does not permit further calls.", HttpStatus.TOO_MANY_REQUESTS);
+
+		return new ResponseEntity<>(resp, HttpStatus.TOO_MANY_REQUESTS);
 	}
 
 	private MyErrorResponse createBaseResponse(HttpServletRequest request, String code, String msg, HttpStatus status) {

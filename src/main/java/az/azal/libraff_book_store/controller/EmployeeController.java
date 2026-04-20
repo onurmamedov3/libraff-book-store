@@ -1,5 +1,6 @@
 package az.azal.libraff_book_store.controller;
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(path = "/employees")
+@RateLimiter(name = "employeeController")
 public class EmployeeController {
 
 	@Autowired
