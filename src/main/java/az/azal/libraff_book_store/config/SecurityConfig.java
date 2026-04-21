@@ -18,7 +18,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import az.azal.libraff_book_store.filters.JwtAuthenticationFilter;
 import az.azal.libraff_book_store.service.UserDetailsServiceImpl;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -35,17 +38,43 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers(HttpMethod.OPTIONS, "/**")
-						.permitAll().requestMatchers(HttpMethod.POST, "/apis/login").permitAll()
-						.requestMatchers("/h2-console/**").permitAll()
-						.requestMatchers(HttpMethod.POST, "/apis/refresh-token").permitAll()
-						.requestMatchers(HttpMethod.GET, "/books").permitAll()
-						.requestMatchers("/", "/index.html", "/style.css", "/script.js").permitAll()
-						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-						.anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+				.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/apis/login").permitAll()
+						.requestMatchers(HttpMethod.POST, "/apis/refresh-token").permitAll()
+						.requestMatchers(HttpMethod.GET, "/books").permitAll().requestMatchers("/h2-console/**")
+						.permitAll().requestMatchers("/", "/index.html", "/style.css", "/script.js").permitAll()
+						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+						.anyRequest().authenticated())
+				.exceptionHandling(ex -> ex
+						// Handles AuthenticationException - unauthenticated access (401)
+						.authenticationEntryPoint((request, response, e) -> {
+							log.warn("Unauthenticated access attempt - URI: {}, IP: {}", request.getRequestURI(),
+									request.getRemoteAddr());
+							response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+							response.setContentType("application/json");
+							response.setCharacterEncoding("UTF-8");
+							response.getWriter()
+									.write("""
+											{"error": "UNAUTHORIZED", "message": "Authentication is required to access this resource."}
+											""");
+						})
+						// Handles AccessDeniedException & AuthorizationDeniedException - forbidden
+						// access (403)
+						.accessDeniedHandler((request, response, e) -> {
+							log.warn("Access denied - URI: {}, IP: {}, Reason: {}", request.getRequestURI(),
+									request.getRemoteAddr(), e.getMessage());
+							response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+							response.setContentType("application/json");
+							response.setCharacterEncoding("UTF-8");
+							response.getWriter()
+									.write("""
+											{"error": "ACCESS_DENIED", "message": "You do not have the required permissions to perform this action."}
+											""");
+						}))
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 		return http.build();
 	}
 

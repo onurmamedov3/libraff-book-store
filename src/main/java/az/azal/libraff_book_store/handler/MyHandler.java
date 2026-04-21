@@ -5,14 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.response.MyErrorResponse;
 import az.azal.libraff_book_store.response.MyFieldError;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
@@ -60,17 +58,17 @@ public class MyHandler {
 
 	}
 
-	@ExceptionHandler({ AccessDeniedException.class, AuthorizationDeniedException.class })
-	public ResponseEntity<MyErrorResponse> handleAccessDeniedException(Exception e, HttpServletRequest request) {
-
-		String errorMessage = "Access Denied: You do not have the required permissions or roles to perform this action.";
-
-		log.warn("Unauthorized access attempt on {} - {}", request.getRequestURI(), e.getMessage());
-
-		MyErrorResponse resp = createBaseResponse(request, "ACCESS_DENIED", errorMessage, HttpStatus.FORBIDDEN);
-
-		return new ResponseEntity<>(resp, HttpStatus.FORBIDDEN);
-	}
+//	@ExceptionHandler({ AccessDeniedException.class, AuthorizationDeniedException.class })
+//	public ResponseEntity<MyErrorResponse> handleAccessDeniedException(Exception e, HttpServletRequest request) {
+//
+//		String errorMessage = "Access Denied: You do not have the required permissions or roles to perform this action.";
+//
+//		log.warn("Unauthorized access attempt on {} - {}", request.getRequestURI(), e.getMessage());
+//
+//		MyErrorResponse resp = createBaseResponse(request, "ACCESS_DENIED", errorMessage, HttpStatus.FORBIDDEN);
+//
+//		return new ResponseEntity<>(resp, HttpStatus.FORBIDDEN);
+//	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<MyErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e,
@@ -96,9 +94,9 @@ public class MyHandler {
 		return new ResponseEntity<>(resp, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-
 	@ExceptionHandler(RequestNotPermitted.class)
-	public ResponseEntity<MyErrorResponse> handleRequestNotPermitted(RequestNotPermitted e, HttpServletRequest request) {
+	public ResponseEntity<MyErrorResponse> handleRequestNotPermitted(RequestNotPermitted e,
+			HttpServletRequest request) {
 
 		log.error("Too many requests {}", request.getRequestURI(), e);
 
