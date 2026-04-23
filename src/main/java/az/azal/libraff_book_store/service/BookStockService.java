@@ -1,6 +1,6 @@
 package az.azal.libraff_book_store.service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -87,7 +87,7 @@ public class BookStockService {
 			history.setTransactionType(TransactionType.RESTOCK);
 
 			history.setStore(stock.getStore());
-			history.setTransactionDate(LocalDate.now());
+			history.setTransactionDate(LocalDateTime.now());
 			history.setEmployee(employee);
 
 			historyRepository.save(history);

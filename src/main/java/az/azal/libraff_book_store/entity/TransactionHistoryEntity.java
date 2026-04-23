@@ -1,6 +1,8 @@
 package az.azal.libraff_book_store.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import az.azal.libraff_book_store.enums.TransactionType;
 import jakarta.persistence.Column;
@@ -40,7 +42,8 @@ public class TransactionHistoryEntity {
 	private Double salesPrice;
 
 	@Column(nullable = false)
-	private LocalDate transactionDate;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime transactionDate;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)

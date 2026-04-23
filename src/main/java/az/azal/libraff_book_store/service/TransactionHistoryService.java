@@ -1,6 +1,8 @@
 package az.azal.libraff_book_store.service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import az.azal.libraff_book_store.exception.MyException;
 import az.azal.libraff_book_store.repository.BookStockRepository;
 import az.azal.libraff_book_store.repository.EmployeeRepository;
 import az.azal.libraff_book_store.repository.TransactionHistoryRepository;
+import az.azal.libraff_book_store.response.BillResponse;
+import az.azal.libraff_book_store.util.BillPrinter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -29,8 +33,10 @@ public class TransactionHistoryService {
 
 	private final DiscountService discountService;
 
+	private final BillPrinter billPrinter;
+
 	@Transactional
-	public void sellBook(Map<Integer, Integer> soldBooks, Integer storeId, Integer employeeId) {
+	public BillResponse sellBook(Map<Integer, Integer> soldBooks, Integer storeId, Integer employeeId) {
 
 		EmployeeEntity employee = employeeRepository.findById(employeeId)
 				.orElseThrow(() -> new MyException(ErrorStatus.EMPLOYEE_NOT_FOUND));
@@ -38,6 +44,8 @@ public class TransactionHistoryService {
 		if (employee.getIsActive() != true) {
 			throw new MyException(ErrorStatus.UNAUTHORIZED_OPERATION);
 		}
+
+		List<TransactionHistoryEntity> histories = new ArrayList<>();
 
 		for (Map.Entry<Integer, Integer> entry : soldBooks.entrySet()) {
 			Integer bookId = entry.getKey();
@@ -68,10 +76,17 @@ public class TransactionHistoryService {
 			history.setTransactionType(TransactionType.SALE);
 
 			history.setStore(stock.getStore());
-			history.setTransactionDate(LocalDate.now());
+			history.setTransactionDate(LocalDateTime.now());
 			history.setEmployee(employee);
 
 			historyRepository.save(history);
+
+			histories.add(history);
 		}
+
+		BillResponse response = new BillResponse();
+		response.setBill(billPrinter.printBill(histories));
+
+		return response;
 	}
 }

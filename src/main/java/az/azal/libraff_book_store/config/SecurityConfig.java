@@ -43,6 +43,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/apis/login").permitAll()
 						.requestMatchers(HttpMethod.POST, "/apis/refresh-token").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/export/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/books").permitAll().requestMatchers("/h2-console/**")
 						.permitAll().requestMatchers("/", "/index.html", "/style.css", "/script.js").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
