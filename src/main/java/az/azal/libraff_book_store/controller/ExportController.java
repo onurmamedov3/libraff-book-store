@@ -19,18 +19,29 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ExportController {
 
-	private final ReportExportService exportService;
+	private final ReportExportService reportExportService;
 
 	private final TransactionHistoryRepository transactionHistoryRepository;
 
-	@GetMapping("/transactions/pdf")
-	public ResponseEntity<byte[]> exportPdf() throws Exception {
-		byte[] pdf = exportService.exportTransactionsPdf();
+	@GetMapping("/sales/pdf")
+	public ResponseEntity<byte[]> downloadSalesPdf() throws Exception {
+		return buildPdfResponse(reportExportService.exportSalesPdf(), "sales-report.pdf");
+	}
 
+	@GetMapping("/restock/pdf")
+	public ResponseEntity<byte[]> downloadRestockPdf() throws Exception {
+		return buildPdfResponse(reportExportService.exportRestockPdf(), "restock-report.pdf");
+	}
+
+	@GetMapping("/combined/pdf")
+	public ResponseEntity<byte[]> downloadCombinedPdf() throws Exception {
+		return buildPdfResponse(reportExportService.exportCombinedPdf(), "combined-report.pdf");
+	}
+
+	private ResponseEntity<byte[]> buildPdfResponse(byte[] pdf, String filename) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_PDF);
-		headers.setContentDispositionFormData("attachment", "transactions.pdf");
-
+		headers.setContentDispositionFormData("attachment", filename);
 		return ResponseEntity.ok().headers(headers).body(pdf);
 	}
 
