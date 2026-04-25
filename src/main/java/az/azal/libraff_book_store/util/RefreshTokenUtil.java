@@ -1,21 +1,34 @@
 package az.azal.libraff_book_store.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class RefreshTokenUtil {
 
-	private final String REFRESH_SECRET_KEY = "dhhfgnmr4Rtc5hhjwTe2ttDdfdfGghgjjPjfdghhh3v32GelsdwdSHog5Hfpia3";
+	@Value("${jwt.refresh-secret}")
+	private String secret;
+
+	private SecretKey REFRESH_SECRET_KEY;
+
+	@PostConstruct
+	private void init() {
+		this.REFRESH_SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+	}
 
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
@@ -31,7 +44,9 @@ public class RefreshTokenUtil {
 	}
 
 	private Claims extractAllClaims(String token) {
-		return Jwts.parser().setSigningKey(REFRESH_SECRET_KEY).parseClaimsJws(token).getBody();
+		return Jwts.parser().verifyWith(REFRESH_SECRET_KEY) // ✅ replaces parser().setSigningKey(String)
+				.build().parseSignedClaims(token) // ✅ replaces parseClaimsJws()
+				.getPayload(); // ✅ replaces getBody()
 	}
 
 	private Boolean isTokenExpired(String token) {
@@ -49,9 +64,12 @@ public class RefreshTokenUtil {
 	}
 
 	private String createToken(Map<String, Object> claims, String subject) {
-		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7 days expiration for
-																								// refresh token
-				.signWith(SignatureAlgorithm.HS256, REFRESH_SECRET_KEY).compact();
+		return Jwts.builder().claims(claims) // ✅ replaces setClaims()
+				.subject(subject) // ✅ replaces setSubject()
+				.issuedAt(new Date(System.currentTimeMillis())) // ✅ replaces setIssuedAt()
+				.expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7)) // ✅ replaces
+																								// setExpiration()
+				.signWith(REFRESH_SECRET_KEY) // ✅ replaces signWith(SignatureAlgorithm, String)
+				.compact();
 	}
 }

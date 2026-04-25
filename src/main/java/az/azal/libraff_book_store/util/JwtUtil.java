@@ -1,21 +1,34 @@
 package az.azal.libraff_book_store.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtUtil {
 
-	private String SECRET_KEY = "dttDdfdfGghgjjPjfdghhh3hhfgnmr4tc5hhjwTe2v32GelsdSHog5Hfpia3";
+	@Value("${jwt.secret}")
+	private String secret;
+
+	private SecretKey SECRET_KEY; // declared but not initialized here
+
+	@PostConstruct // Spring guarantees @Value is done before this runs
+	private void init() {
+		this.SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+	}
 
 	public String generateToken(UserDetails userDetails) {
 		Map<String, Object> claims = new HashMap<>();
@@ -23,9 +36,12 @@ public class JwtUtil {
 	}
 
 	private String createToken(Map<String, Object> claims, String subject) {
-		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + 1000 * 900)) // 15 minutes
-				.signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+		return Jwts.builder().claims(claims) // ✅ replaces setClaims()
+				.subject(subject) // ✅ replaces setSubject()
+				.issuedAt(new Date(System.currentTimeMillis())) // ✅ replaces setIssuedAt()
+				.expiration(new Date(System.currentTimeMillis() + 1000 * 900)) // ✅ replaces setExpiration()
+				.signWith(SECRET_KEY) // ✅ replaces signWith(Algorithm, String)
+				.compact();
 	}
 
 	public boolean validateToken(String token, UserDetails userDetails) {
@@ -37,14 +53,6 @@ public class JwtUtil {
 		return extractClaim(token, Claims::getSubject);
 	}
 
-	private Claims extractAllClaims(String token) {
-		return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
-	}
-
-	private boolean isTokenExpired(String token) {
-		return extractExpiration(token).before(new Date());
-	}
-
 	public Date extractExpiration(String token) {
 		return extractClaim(token, Claims::getExpiration);
 	}
@@ -52,5 +60,15 @@ public class JwtUtil {
 	public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
 		final Claims claims = extractAllClaims(token);
 		return claimsResolver.apply(claims);
+	}
+
+	private Claims extractAllClaims(String token) {
+		return Jwts.parser().verifyWith(SECRET_KEY) // ✅ replaces parserBuilder().setSigningKey()
+				.build().parseSignedClaims(token) // ✅ replaces parseClaimsJws()
+				.getPayload(); // ✅ replaces getBody()
+	}
+
+	private boolean isTokenExpired(String token) {
+		return extractExpiration(token).before(new Date());
 	}
 }
