@@ -54,7 +54,7 @@ INSERT INTO roles (name) VALUES
 ('ROLE_RESTOCK_BOOK'),       -- 3
 ('ROLE_REQUEST_TRANSFER'),   -- 4
 ('ROLE_APPROVE_TRANSFER'),   -- 5
-('ROLE_ADD_DISCOUNT'),        -- 6  
+('ROLE_ADD_DISCOUNT'),       -- 6  
 ('ROLE_ADD_EMPLOYEE'),       -- 7
 ('ROLE_GET_EMPLOYEE'),       -- 8
 ('ROLE_DELETE_EMPLOYEE'),    -- 9
@@ -69,7 +69,7 @@ INSERT INTO employees (FIN, name, surname, password, is_active, email, phone, sa
 ('AZ11234', 'Rafiq', 'Şiriyev', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'rafiq.shiriyev@store.com', '+994505551111', 2000.00, '2026-03-02', 1, 1),
 ('AZ11235', 'Nərmin', 'Məmmədova', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'nermin.mammadova@store.com', '+994505552222', 3000.00, '2026-02-17', 1, 2),
 ('AZ11236', 'Əhməd', 'Quliyev', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'ahmad.guliyev@store.com', '+994505553333', 4500.00, '2026-02-20', 1, 3),
-('AZ99999', 'Huseyn', 'Zulfuqarov', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'huseynzulfuqarov@store.com', '+994505559999', 4800.00, '2026-02-10', 1, 4);
+('AZ99999', 'Huseyn', 'Zulfuqarov', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'test.email.libraff@gmail.com', '+994505559999', 4800.00, '2026-02-10', 1, 4);
 
 -- 7. INSERT EMPLOYEE_ROLES (Replacing the redundant user_roles table)
 -- ==========================================

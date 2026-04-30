@@ -34,6 +34,11 @@ public class RateLimiterFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
+		if (request.getRequestURI().startsWith("/h2-console")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
 		String header = request.getHeader("Authorization");
 
 		boolean allowed = false;

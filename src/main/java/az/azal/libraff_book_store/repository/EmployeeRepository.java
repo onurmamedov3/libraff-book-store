@@ -21,4 +21,6 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Intege
 
 	Optional<EmployeeEntity> findByFIN(String fin);
 
+	Optional<EmployeeEntity> findByStoreIdAndPositionIdAndIsActive(Integer storeId, Integer positionId,
+			Boolean isActive);
 }

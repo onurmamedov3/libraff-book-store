@@ -1,10 +1,14 @@
 package az.azal.libraff_book_store.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.BookEntity;
@@ -20,6 +24,8 @@ import az.azal.libraff_book_store.repository.BookStockRepository;
 import az.azal.libraff_book_store.repository.EmployeeRepository;
 import az.azal.libraff_book_store.repository.StoreRepository;
 import az.azal.libraff_book_store.repository.TransactionHistoryRepository;
+import az.azal.libraff_book_store.response.LowStockBookDTO;
+import az.azal.libraff_book_store.util.PositionConstants;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -37,6 +43,8 @@ public class BookStockService {
 
 	private final BookRepository bookRepository;
 
+	private final EmailService emailService;
+
 	@Transactional
 	public void restock(Map<Integer, Integer> restockedBooks, Integer storeId, Integer employeeId) {
 
@@ -50,7 +58,7 @@ public class BookStockService {
 		StoreEntity store = storeRepository.findById(storeId)
 				.orElseThrow(() -> new MyException(ErrorStatus.STORE_NOT_FOUND));
 
-		if (employee.getIsActive() != true) {
+		if (!employee.getIsActive()) {
 			throw new MyException(ErrorStatus.UNAUTHORIZED_OPERATION);
 		}
 
@@ -93,6 +101,33 @@ public class BookStockService {
 			historyRepository.save(history);
 
 		}
+
+	}
+
+	// @Scheduled(cron = "0 0 8 * * *")
+	@Scheduled(cron = "*/25 * * * * *")
+	@Transactional
+	public void checkLowStockBooks() {
+
+		List<BookStockEntity> books = repository.findByQuantityLessThanEqual(5);
+
+		Map<String, List<LowStockBookDTO>> map = new HashMap<String, List<LowStockBookDTO>>();
+
+		for (BookStockEntity book : books) {
+
+			Optional<EmployeeEntity> manager = employeeRepository.findByStoreIdAndPositionIdAndIsActive(
+					book.getStore().getId(), PositionConstants.STORE_MANAGER, true);
+
+			LowStockBookDTO l = new LowStockBookDTO(book.getBook().getId(), book.getBook().getName(),
+					book.getQuantity(), book.getStore().getName());
+
+			if (manager.isEmpty())
+				continue;
+
+			map.computeIfAbsent(manager.get().getEmail(), k -> new ArrayList<>()).add(l);
+		}
+
+		emailService.sendLowStockNotification(map);
 
 	}
 

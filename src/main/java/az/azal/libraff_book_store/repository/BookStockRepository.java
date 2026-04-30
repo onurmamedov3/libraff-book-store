@@ -1,5 +1,6 @@
 package az.azal.libraff_book_store.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +16,7 @@ public interface BookStockRepository extends JpaRepository<BookStockEntity, Inte
 	Optional<BookStockEntity> findByBookIdAndStoreId(Integer bookId, Integer storeId);
 
 	Optional<BookStockEntity> findByBookAndStore(BookEntity book, StoreEntity toStore);
+
+	List<BookStockEntity> findByQuantityLessThanEqual(Integer quantity);
 
 }
