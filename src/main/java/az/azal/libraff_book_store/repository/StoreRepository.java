@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 
 import az.azal.libraff_book_store.entity.StoreEntity;
 
-
 @Repository
 public interface StoreRepository extends JpaRepository<StoreEntity, Integer> {
 

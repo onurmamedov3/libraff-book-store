@@ -1,6 +1,5 @@
 package az.azal.libraff_book_store.controller;
 
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +22,7 @@ import az.azal.libraff_book_store.response.EmployeeAddResponse;
 import az.azal.libraff_book_store.response.EmployeeListResponse;
 import az.azal.libraff_book_store.response.EmployeeSingleResponse;
 import az.azal.libraff_book_store.service.EmployeeService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 
 @RestController
