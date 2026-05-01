@@ -17,6 +17,13 @@ INSERT INTO books (name, date_published, publication_amount, purchase_price, sal
 ('Brave New World', '1932-08-01',40, 7.50, 11.99, 2, 2), 
 ('Refactoring', '1999-07-08',10, 39.99, 54.99, 2, 3), 
 ('Sapiens', '2011-09-04',30, 18.00, 25.00, 1, 4), 
+('Atomic Habits', '2018-10-16', 70, 15.00, 22.99, 1, 4),
+('Domain Driven Design', '2003-08-30', 18, 49.99, 64.99, 2, 3),
+('The Alchemist', '1988-01-01', 65, 7.00, 11.99, 1, 1),
+('Code Complete', '2004-06-09', 22, 42.00, 55.00, 2, 3),
+('Thinking Fast and Slow', '2011-10-25', 38, 16.00, 23.99, 1, 4),
+('Fahrenheit 451', '1953-10-19', 48, 6.00, 10.49, 2, 2),
+('The Clean Coder', '2011-05-13', 12, 35.00, 47.99, 1, 3),
 ('The Catcher in the Rye', '1951-07-16',45, 6.50, 10.99, 2, 1); 
 
 -- 3. INSERT AUTHORS 
@@ -69,7 +76,7 @@ INSERT INTO employees (FIN, name, surname, password, is_active, email, phone, sa
 ('AZ11234', 'Rafiq', 'Şiriyev', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'rafiq.shiriyev@store.com', '+994505551111', 2000.00, '2026-03-02', 1, 1),
 ('AZ11235', 'Nərmin', 'Məmmədova', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'nermin.mammadova@store.com', '+994505552222', 3000.00, '2026-02-17', 1, 2),
 ('AZ11236', 'Əhməd', 'Quliyev', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'ahmad.guliyev@store.com', '+994505553333', 4500.00, '2026-02-20', 1, 3),
-('AZ99999', 'Huseyn', 'Zulfuqarov', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'test.email.libraff@gmail.com', '+994505559999', 4800.00, '2026-02-10', 1, 4);
+('AZ99999', 'Huseyn', 'Zulfuqarov', '$2a$12$ewpNyWFfE/ibuC3fAldFOuXPpE7bpxThTDf1/yxQOY2o4md9Cn5Ym', TRUE, 'hzulfuqarov.dev@gmail.com', '+994505559999', 4800.00, '2026-02-10', 1, 4);
 
 -- 7. INSERT EMPLOYEE_ROLES (Replacing the redundant user_roles table)
 -- ==========================================

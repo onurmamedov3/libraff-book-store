@@ -14,4 +14,12 @@ import lombok.Setter;
 public class BookListResponse {
 	private List<BookSingleResponse> books;
 
+	private int currentPage;
+
+	private int totalPages;
+
+	private long totalElements;
+
+	private int pageSize;
+
 }

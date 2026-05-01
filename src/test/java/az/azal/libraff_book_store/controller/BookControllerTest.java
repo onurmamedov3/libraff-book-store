@@ -1,5 +1,6 @@
 package az.azal.libraff_book_store.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,6 +17,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.web.servlet.MockMvc;
@@ -62,7 +64,7 @@ class BookControllerTest {
 		BookListResponse fakeResponse = new BookListResponse();
 		fakeResponse.setBooks(List.of()); // empty list
 
-		when(bookService.getAllBooks()).thenReturn(fakeResponse);
+		when(bookService.getAllBooks(any(Pageable.class))).thenReturn(fakeResponse);
 
 		mockMvc.perform(get("/books").contentType(MediaType.APPLICATION_JSON))
 
@@ -84,10 +86,13 @@ class BookControllerTest {
 
 		BookListResponse fakeResponse = new BookListResponse();
 		fakeResponse.setBooks(List.of(book1, book2));
+		fakeResponse.setCurrentPage(0);
+		fakeResponse.setTotalPages(1);
+		fakeResponse.setTotalElements(2);
 
-		when(bookService.getAllBooks()).thenReturn(fakeResponse);
+		when(bookService.getAllBooks(any(Pageable.class))).thenReturn(fakeResponse);
 
-		mockMvc.perform(get("/books").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(get("/books").param("page", "0").param("size", "10").contentType(MediaType.APPLICATION_JSON))
 
 				.andExpect(status().isOk())
 
@@ -97,7 +102,13 @@ class BookControllerTest {
 
 				.andExpect(jsonPath("$.books[0].name").value("Clean Code"))
 
-				.andExpect(jsonPath("$.books[1].name").value("Effective Java"));
+				.andExpect(jsonPath("$.books[1].name").value("Effective Java"))
+
+				.andExpect(jsonPath("$.currentPage").value(0))
+
+				.andExpect(jsonPath("$.totalPages").value(1))
+
+				.andExpect(jsonPath("$.totalElements").value(2));
 	}
 
 	@Test

@@ -1,6 +1,8 @@
 package az.azal.libraff_book_store.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,8 +29,8 @@ public class BookController {
 	private BookService service;
 
 	@GetMapping
-	public BookListResponse getAll() {
-		return service.getAllBooks();
+	public BookListResponse getAll(@PageableDefault(size = 10, page = 0) Pageable pageable) {
+		return service.getAllBooks(pageable);
 	}
 
 	@PostMapping

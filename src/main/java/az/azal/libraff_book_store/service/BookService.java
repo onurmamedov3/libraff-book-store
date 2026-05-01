@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import az.azal.libraff_book_store.entity.AuthorEntity;
@@ -38,13 +40,14 @@ public class BookService {
 
 	private final ModelMapper mapper;
 
-	public BookListResponse getAllBooks() {
+	public BookListResponse getAllBooks(Pageable p) {
 
 		log.info("Fetching books from the database");
 
-		List<BookEntity> books = repository.findAll();
+		Page<BookEntity> books = repository.findAll(p);
 
-		log.debug("Books fetched from the database: {}", books.size());
+		log.debug("Books fetched: {} of {} total", books.getNumberOfElements(), books.getTotalElements());
+
 		List<BookSingleResponse> responseList = new ArrayList<BookSingleResponse>();
 
 		for (BookEntity book : books) {
@@ -55,6 +58,10 @@ public class BookService {
 
 		BookListResponse listResponse = new BookListResponse();
 		listResponse.setBooks(responseList);
+		listResponse.setCurrentPage(books.getNumber());
+		listResponse.setTotalPages(books.getTotalPages());
+		listResponse.setTotalElements(books.getTotalElements());
+		listResponse.setPageSize(books.getSize());
 		log.info("Successfully fetched the books from database");
 
 		return listResponse;

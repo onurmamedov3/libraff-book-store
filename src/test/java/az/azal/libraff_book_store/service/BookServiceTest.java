@@ -22,6 +22,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
 import az.azal.libraff_book_store.entity.AuthorEntity;
@@ -52,6 +55,8 @@ class BookServiceTest {
 	private GenreRepository genreRepository;
 	@Mock
 	private AuthorRepository authorRepository;
+	@Mock
+	private Pageable pageable;
 	@Mock
 	private ModelMapper mapper;
 
@@ -201,7 +206,7 @@ class BookServiceTest {
 		book2.setId(2);
 		book2.setName("Fundamentals of Programming");
 
-		when(repository.findAll()).thenReturn(List.of(book1, book2));
+		when(repository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(book1, book2)));
 
 		doAnswer(invocation -> {
 			BookEntity source = invocation.getArgument(0);
@@ -210,29 +215,33 @@ class BookServiceTest {
 			return null;
 		}).when(mapper).map(any(BookEntity.class), any(BookSingleResponse.class));
 
-		BookListResponse result = bookService.getAllBooks();
+		BookListResponse result = bookService.getAllBooks(PageRequest.of(0, 10));
 
 		assertNotNull(result);
 		assertEquals(2, result.getBooks().size());
 		assertEquals("Clean Code", result.getBooks().get(0).getName());
 		assertEquals("Fundamentals of Programming", result.getBooks().get(1).getName());
 
-		verify(repository, times(1)).findAll();
+		assertEquals(0, result.getCurrentPage());
+		assertEquals(1, result.getTotalPages());
+		assertEquals(2, result.getTotalElements());
+
+		verify(repository, times(1)).findAll(pageable);
 	}
 
 	@Test
 	void getAllBooks_ReturnsEmptyList_WhenNoBooksExists() {
 
 		// Given
-		when(repository.findAll()).thenReturn(Collections.emptyList());
+		when(repository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(Collections.emptyList()));
 
 		// When
-		BookListResponse result = bookService.getAllBooks();
+		BookListResponse result = bookService.getAllBooks(PageRequest.of(0, 10));
 
 		// Then
 		assertNotNull(result);
 		assertEquals(0, result.getBooks().size());
-		verify(repository, times(1)).findAll();
+		verify(repository, times(1)).findAll(pageable);
 		verify(mapper, never()).map(any(), any());
 	}
 }
