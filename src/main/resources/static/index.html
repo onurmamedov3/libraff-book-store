@@ -7,17 +7,18 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+    <!-- ─── Main sliding container (unchanged) ─────────────────────────── -->
     <div class="container" id="container">
         <div class="form-container reset-password-container">
             <form action="#" id="resetForm">
                 <h1>Reset Password</h1>
-                <span>Submit your details to IT Support</span>
+                <span>Enter your FIN and corporate email to receive a reset code</span>
                 <input type="text" id="resetFin" placeholder="FIN Code (e.g. AZ11234)" required />
                 <input type="email" id="resetEmail" placeholder="Corporate Email" required />
-                <button type="submit">Request Reset</button>
+                <button type="submit" id="resetSubmitBtn">Send Reset Code</button>
             </form>
         </div>
-        
+
         <div class="form-container sign-in-container">
             <form action="#" id="loginForm">
                 <h1>Staff Login</h1>
@@ -27,7 +28,7 @@
                 <button type="submit">Sign In</button>
             </form>
         </div>
-        
+
         <div class="overlay-container">
             <div class="overlay">
                 <div class="overlay-panel overlay-left">
@@ -37,10 +38,49 @@
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h1>Locked Out?</h1>
-                    <p>If you forgot your password, our IT support team can help you reset it securely.</p>
+                    <p>We'll send a 6-digit code to your corporate email so you can reset your password securely.</p>
                     <button class="ghost" id="resetPasswordBtn">Reset Password</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ─── Step 2: OTP entry modal ────────────────────────────────────── -->
+    <div class="modal-overlay" id="otpModal">
+        <div class="modal">
+            <div class="modal-icon"><i class="fas fa-envelope-open-text"></i></div>
+            <h2>Check Your Email</h2>
+            <p class="modal-sub">We sent a 6-digit code to <strong id="otpEmailHint"></strong>.<br>It expires in <strong>5 minutes</strong>.</p>
+
+            <div class="otp-row" id="otpRow">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+            </div>
+
+            <p class="otp-error" id="otpError"></p>
+
+            <button id="verifyOtpBtn">Verify Code</button>
+            <p class="resend-line">Didn't receive it? <a href="#" id="resendBtn">Resend</a></p>
+            <button class="btn-text" id="cancelOtpBtn">← Back to login</button>
+        </div>
+    </div>
+
+    <!-- ─── Step 3: New password modal ─────────────────────────────────── -->
+    <div class="modal-overlay" id="newPasswordModal">
+        <div class="modal">
+            <div class="modal-icon success"><i class="fas fa-lock-open"></i></div>
+            <h2>Set New Password</h2>
+            <p class="modal-sub">Your identity is verified. Choose a strong new password.</p>
+
+            <input type="password" id="newPassword" placeholder="New Password" required />
+            <input type="password" id="confirmPassword" placeholder="Confirm New Password" required />
+            <p class="otp-error" id="pwError"></p>
+
+            <button id="savePasswordBtn">Save Password</button>
         </div>
     </div>
 
