@@ -60,7 +60,13 @@ public enum ErrorStatus {
 
 	INVALID_STATUS("Invalid status", "INVALID_STATUS", HttpStatus.BAD_REQUEST),
 
-	VALIDATION_ERROR("Validation failed", "VALIDATION_ERROR", HttpStatus.BAD_REQUEST);
+	INVALID_OTP("Invalid OTP code!", "INVALID_OTP", HttpStatus.BAD_REQUEST),
+
+	DUPLICATE_PASSWORD("New password cannot be the same as the old password!", "DUPLICATE_PASSWORD", HttpStatus.BAD_REQUEST),
+
+	VALIDATION_ERROR("Validation failed", "VALIDATION_ERROR", HttpStatus.BAD_REQUEST),
+
+	INVALID_RESET_TOKEN("Invalid reset token!", "INVALID_RESET_TOKEN", HttpStatus.BAD_REQUEST);
 
 	private final String message;
 	private final String errorCode;

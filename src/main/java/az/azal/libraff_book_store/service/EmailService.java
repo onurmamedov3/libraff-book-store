@@ -47,6 +47,22 @@ public class EmailService {
 
 	}
 
+	public void sendOtpCode(String otp, String recipientEmail) {
+
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setFrom(senderEmail);
+		message.setTo(recipientEmail);
+		message.setSubject("Your OTP Code for reseting your password");
+		message.setText("Your OTP code is: " + otp);
+
+		try {
+			mailSender.send(message);
+			log.info("OTP email sent to {}", recipientEmail);
+		} catch (MailException e) {
+			log.error("Failed to send OTP email to {}", recipientEmail, e);
+		}
+	}
+
 	private String buildEmailBody(List<LowStockBookDTO> books) {
 
 		StringBuilder sb = new StringBuilder();
@@ -60,5 +76,7 @@ public class EmailService {
 
 		return sb.toString();
 	}
+
+
 
 }

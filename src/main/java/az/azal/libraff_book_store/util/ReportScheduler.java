@@ -22,17 +22,17 @@ public class ReportScheduler {
 	// Safe, persistent, cross-platform — no OS-specific checks needed
 	private static final String REPORT_DIR = System.getProperty("user.home") + File.separator + "libraff-reports";
 
-	@Scheduled(cron = "*/25 * * * * *")
+	@Scheduled(cron = "0 0 8 1 * ?")
 	public void generateMonthlySalesReport() {
 		saveReport(reportExportService::exportSalesPdf, "sales");
 	}
 
-	@Scheduled(cron = "*/25 * * * * *")
+	@Scheduled(cron = "0 0 8 1 * ?")
 	public void generateMonthlyRestockReport() {
 		saveReport(reportExportService::exportRestockPdf, "restock");
 	}
 
-	@Scheduled(cron = "*/25 * * * * *")
+	@Scheduled(cron = "0 0 8 1 * ?")
 	public void generateMonthlyCombinedReport() {
 		saveReport(reportExportService::exportCombinedPdf, "combined");
 	}
