@@ -68,7 +68,9 @@ INSERT INTO roles (name) VALUES
 ('ROLE_PATCH_EMPLOYEE'),     -- 10
 ('ROLE_REHIRE_EMPLOYEE'),    -- 11
 ('ROLE_ADD_GRADE'),          -- 12
-('ROLE_GET_GRADE');          -- 13
+('ROLE_GET_GRADE'),          -- 13
+('ROLE_ADD_DOCUMENT'),       -- 14
+('ROLE_USE_AI');             -- 15
 
 -- 6. INSERT EMPLOYEES (Now acting as system Users)
 -- Note: All passwords are set to 'pass123' using BCrypt hashing.
@@ -121,7 +123,9 @@ INSERT INTO position_roles (position_id, role_id) VALUES
 (4, 10),-- ROLE_PATCH_EMPLOYEE
 (4, 11),-- ROLE_REHIRE_EMPLOYEE
 (4, 12),-- ROLE_ADD_GRADE
-(4, 13);-- ROLE_GET_GRADE
+(4, 13),-- ROLE_GET_GRADE
+(4, 14),-- ROLE_ADD_DOCUMENT
+(4, 15);-- ROLE_USE_AI
 
 
 -- ====================================================================
